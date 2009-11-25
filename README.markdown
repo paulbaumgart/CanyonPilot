@@ -1,4 +1,5 @@
-"""Final Project Proposal"""
+Final Project Proposal
+======================
 
 by Paul Baumgart and Eric Levine
 
