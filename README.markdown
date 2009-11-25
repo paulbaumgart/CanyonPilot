@@ -12,10 +12,10 @@ The plane will be a textured 3d model, with moving ailerons. It will be controll
 The canyon will be built on-the-fly from a piecewise cubic Bezier curve. The curve will determine the path of the canyon. In order to ensure a smooth path, the piecewise curve will be C1 continuous. A height map will be generated based on path defined by the curve. The height map will be perturbed using fractal terrain generation techniques in order to create a realistic appearance for the canyon.
 
 Below is a summary of the technical features to be included in this project:
- - Shadow mapping
- - Bounding volumes for collision detection
- - Piecewise Bezier curves as paths
- - C1 continuity
- - Fractal terrain generation
- - Height maps
+-  Shadow mapping
+-  Bounding volumes for collision detection
+-  Piecewise Bezier curves as paths
+-  C1 continuity
+-  Fractal terrain generation
+-  Height maps
 
