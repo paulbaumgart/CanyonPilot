@@ -15,7 +15,7 @@
 #define LR_TURN_MAG 40
 #define UD_TURN_MAG 1
 #define ROTATIONAL_MAG 2
-#define SPEED 60
+#define SPEED 90
 
 class Airplane : public TransformGroup {
   public:
@@ -142,6 +142,10 @@ class Airplane : public TransformGroup {
     
     void setPosition(Vector3 p) {
       position = p;
+    }
+    
+    Vector3 getPosition() {
+      return position;
     }
     
     virtual void drawObject(Matrix4& mat) {

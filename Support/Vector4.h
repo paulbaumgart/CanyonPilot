@@ -17,7 +17,7 @@ class Vector4
     double* getPointer();  // return pointer to vector elements
     void setElement(int, double);
     double getElement(int);
-    double operator[](int);
+    double& operator[](int);
     Vector4 add(Vector4 &);
     Vector4 operator+(Vector4 &);
     Vector4 subtract(Vector4 &);

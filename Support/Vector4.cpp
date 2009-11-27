@@ -31,8 +31,8 @@ double Vector4::getElement(int index) {
   return v[index];
 }
 
-double Vector4::operator[](int index) {
-  return getElement(index);
+double& Vector4::operator[](int index) {
+  return v[index];
 }
 
 Vector4 Vector4::add(Vector4 & rhs) {
