@@ -71,9 +71,13 @@ void loadData() {
 void step() {
   double t = getMicroTime();
     
+  if (!paused) {
+    plane.step(speed*(t - lastTime));
+  }
+
+  lastTime = t;
 
   if (paused) {
-    lastTime = t;
     return;
   }
   
@@ -96,10 +100,6 @@ void step() {
     paused = true;
     timeout = 25;
   }
-
-  plane.step(speed*(t - lastTime));
-
-  lastTime = t;
 }
 
 //----------------------------------------------------------------------------
@@ -109,7 +109,6 @@ void displayCallback(void)
 {  
   pthread_mutex_lock(&drawMutex);
 
-  step();
 
   Matrix4 identity;
 
@@ -123,9 +122,11 @@ void displayCallback(void)
   glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
   glMaterialfv(GL_FRONT, GL_SPECULAR, diffuse);
   
+  step();
+
   display.setCamera(identity);
   display.draw(identity);
-  
+    
   glLoadIdentity();
 
   canyon->draw();
