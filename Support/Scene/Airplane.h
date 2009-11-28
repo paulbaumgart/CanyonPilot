@@ -149,7 +149,7 @@ class Airplane : public TransformGroup {
     }
 
     Vector3 getWingTip(bool right=true) {
-      return getMatrix().multiply(airplane->getMatrix()).multiply(Vector3::MakeVector(right ? -8 : 8, 0, -1.5));
+      return Matrix4::TranslationMatrix(0, 0, -20).multiply(getMatrix().multiply(airplane->getMatrix()).multiply(Vector3::MakeVector(right ? -8 : 8, 0, -1.5)));
     }
     
     virtual void drawObject(Matrix4& mat) {

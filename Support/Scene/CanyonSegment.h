@@ -5,6 +5,7 @@
 #include <limits>
 using namespace std;
 
+
 #define BEZIER_POINTS 50
 #define DIFFICULTY_COEFFICIENT(d) (sqrt((d) + 2.0) / 40)
 
@@ -15,6 +16,8 @@ private:
   int width, height, xMin, yMin, startDifficulty, endDifficulty;
   Vector3 controlPoints[4];
   CanyonSegment* previous;
+  int collidedx, collidedy;
+
   
 public:  
   CanyonSegment(int xStart, int yStart, int xNext, int w, int h, CanyonSegment* prev, int startDiff, int endDiff) {
@@ -24,6 +27,7 @@ public:
     this->previous = prev;
     this->startDifficulty = startDiff;
     this->endDifficulty = endDiff;
+    this->collidedx = this->collidedy = -1;
     
     int midpointX = (xStart + xNext) / 2;
     int newControlX1 = (rand() % width) - (width / 2) + midpointX;
@@ -88,7 +92,7 @@ public:
   }
 
   Vector3 getHeightMapCoords(Vector3 point) {
-    return Vector3::MakeVector(floor(point[X] / 4 - xMin), floor(point[Z] / 4 - yMin), 0);
+    return Vector3::MakeVector(round(point[X] / 4.0 - xMin), round(point[Z] / 4.0 - yMin), 0);
   }
 
   bool pointOnBackSide(Vector3 point) {
@@ -96,11 +100,16 @@ public:
     int x = coords[X];
     int y = coords[Y];
 
-    for (int j = y - 1; j < y + 1; j++) {
-      for (int i = x - 1; i < x + 1; i++) {
+    double maxProj = -1e10;
+
+    bool retval = false;
+
+    for (int j = y; j < y + 3; j++) {
+        int i = x;
         Vector3 v1 = getPoint(i, j);
         Vector3 v2 = getPoint(i, j + 1);
         Vector3 v3 = getPoint(i + 1, j + 1);
+        Vector3 v4 = getPoint(i + 1, j);
         Vector3 normal = (v3 - v2).cross(v1 - v2);
         normal.normalize();
 
@@ -109,11 +118,18 @@ public:
         if (isinf(normal[X]))
           continue;
 
-        if (normal.dot(w) < 0)
-          return true;
-      }
+        double proj = normal.dot(w);
+
+        if (proj < 0 && (v1[Y] > point[Y] || v2[Y] > point[Y] || v3[Y] > point[Y] || v4[Y] > point[Y])) {
+          if (proj > maxProj) {
+            collidedx = i;
+            collidedy = j;
+            maxProj = proj;
+          }
+          retval = true;
+        }
     }
-    return false;
+    return retval;
   }
 
 
@@ -169,6 +185,7 @@ public:
     // Draw this segment
     for (int j = 0; j < height - 1; j++) {
       for (int i = 0; i < width - 1; i++) {
+        bool makeRed = (i == collidedx && j == collidedy);
         Vector3 v1 = getPoint(i, j);
         Vector3 v2 = getPoint(i, j + 1);
         Vector3 v3 = getPoint(i + 1, j + 1);
@@ -176,13 +193,13 @@ public:
         Vector3 normal = (v3 - v2).cross(v1 - v2);
         normal.normalize();
         glNormal3dv(normal.getPointer());
-        setColor(v1[Y]);
+        makeRed ? glColor3d(1,0,0) : setColor(v1[Y]);
         glVertex3dv(v1.getPointer());
-        setColor(v2[Y]);
+        makeRed ? glColor3d(1,0,0) : setColor(v2[Y]);
         glVertex3dv(v2.getPointer());
-        setColor(v3[Y]);
+        makeRed ? glColor3d(1,0,0)  : setColor(v3[Y]);
         glVertex3dv(v3.getPointer());
-        setColor(v4[Y]);
+        makeRed ? glColor3d(1,0,0)  : setColor(v4[Y]);
         glVertex3dv(v4.getPointer());
       }
     }

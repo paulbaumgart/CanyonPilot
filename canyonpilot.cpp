@@ -39,7 +39,7 @@ bool paused = false;
 
 int speed = 1;
 
-int timeout = 0;
+int timeout = 2;
 
 Canyon* canyon;
 
@@ -70,14 +70,12 @@ void loadData() {
 
 void step() {
   double t = getMicroTime();
-  
-  if (!paused)
-    plane.step(speed*(t - lastTime));
-  
-  lastTime = t;
+    
 
-  if (paused)
+  if (paused) {
+    lastTime = t;
     return;
+  }
   
   Vector3 position = plane.getPosition();
   if (position[Z] > (canyon->getYMin() + 10) * 4) {
@@ -86,7 +84,6 @@ void step() {
 
   if (!paused && timeout > 0) {
     timeout--;
-    cerr << timeout << endl;
   }
 
   if (timeout <= 0 && canyon->collisionWithPoint(plane.getWingTip(true))) {
@@ -99,7 +96,10 @@ void step() {
     paused = true;
     timeout = 25;
   }
-  
+
+  plane.step(speed*(t - lastTime));
+
+  lastTime = t;
 }
 
 //----------------------------------------------------------------------------
@@ -108,6 +108,9 @@ void step() {
 void displayCallback(void)
 {  
   pthread_mutex_lock(&drawMutex);
+
+  step();
+
   Matrix4 identity;
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
@@ -120,13 +123,13 @@ void displayCallback(void)
   glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
   glMaterialfv(GL_FRONT, GL_SPECULAR, diffuse);
   
-  step();
-  
   display.setCamera(identity);
   display.draw(identity);
   
   glLoadIdentity();
+
   canyon->draw();
+
 
   glFlush();
   glutSwapBuffers();
