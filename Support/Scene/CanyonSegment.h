@@ -33,7 +33,7 @@ public:
     controlPoints[2] = Vector3::MakeVector(newControlX1, yStart + height * 2 / 3.0, 0);
     controlPoints[3] = Vector3::MakeVector(newControlX2, yStart + height, 0);
     
-    int fuzzFactor = (1.0 / DIFFICULTY_COEFFICIENT(min(startDiff, endDiff))) + 5;
+    int fuzzFactor = 2*(1.0 / DIFFICULTY_COEFFICIENT(min(startDiff, endDiff))) + 5;
     printf("Fuzz: %d\n", fuzzFactor);
     this->xMin = fmin(controlPoints[0][X], fmin(controlPoints[1][X], fmin(controlPoints[2][X], controlPoints[3][X]))) - fuzzFactor;
     int xMax = fmax(controlPoints[0][X], fmax(controlPoints[1][X], fmax(controlPoints[2][X], controlPoints[3][X]))) + fuzzFactor;
@@ -55,7 +55,7 @@ public:
       for (int i = 0; i < width; i++) {
         double dist = height + width;
         double bestT = 0;
-        for (double t = stepAmount; t < 1 + stepAmount; t += stepAmount) {
+        for (double t = -5*stepAmount; t < 1 + (5*stepAmount); t += stepAmount) {
           Vector3 coords = multiplierMatrix.multiply(Vector3::BezierVector(t));
           double distToCoords = sqrt(pow(i - coords[X], 2) + pow(j - coords[Y], 2));
           if (distToCoords < dist) {
@@ -86,6 +86,36 @@ public:
       return Vector3::MakeVector(numeric_limits<double>::infinity(),numeric_limits<double>::infinity(),numeric_limits<double>::infinity());
     }
   }
+
+  Vector3 getHeightMapCoords(Vector3 point) {
+    return Vector3::MakeVector(floor(point[X] / 4 - xMin), floor(point[Z] / 4 - yMin), 0);
+  }
+
+  bool pointOnBackSide(Vector3 point) {
+    Vector3 coords = getHeightMapCoords(point);
+    int x = coords[X];
+    int y = coords[Y];
+
+    for (int j = y - 1; j < y + 1; j++) {
+      for (int i = x - 1; i < x + 1; i++) {
+        Vector3 v1 = getPoint(i, j);
+        Vector3 v2 = getPoint(i, j + 1);
+        Vector3 v3 = getPoint(i + 1, j + 1);
+        Vector3 normal = (v3 - v2).cross(v1 - v2);
+        normal.normalize();
+
+        Vector3 w = point - v1;
+
+        if (isinf(normal[X]))
+          continue;
+
+        if (normal.dot(w) < 0)
+          return true;
+      }
+    }
+    return false;
+  }
+
 
   void setColor(double height) {
     if (height < 10) {
