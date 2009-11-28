@@ -18,8 +18,8 @@
 
 using namespace std;
 
-int Window::width  = 512;   // set window width in pixels here
-int Window::height = 512;   // set window height in pixels here
+int width  = 512;   // set window width in pixels here
+int height = 512;   // set window height in pixels here
 
 double getMicroTime() {
   struct timeval t;
@@ -53,7 +53,7 @@ TransformGroup display(Matrix4::TranslationMatrix(0, 0, -20), 1);
 
 //----------------------------------------------------------------------------
 // Callback method called when window is resized.
-void Window::reshapeCallback(int w, int h)
+void reshapeCallback(int w, int h)
 {
   width = w;
   height = h;
@@ -66,7 +66,7 @@ void Window::reshapeCallback(int w, int h)
 
 void idleFunc(void) {
   counter++;
-  Window::displayCallback();
+  displayCallback();
 }
 
 void xloadData() {
@@ -165,7 +165,7 @@ void step() {
 //----------------------------------------------------------------------------
 // Callback method called when window readraw is necessary or
 // when glutPostRedisplay() was called.
-void Window::displayCallback(void)
+void displayCallback(void)
 {  
   pthread_mutex_lock(&drawMutex);
   Matrix4 identity;
@@ -212,7 +212,7 @@ void keyDownHandler(unsigned char key, int, int)
     plane.turnDown();
   }
   
-  Window::displayCallback();
+  displayCallback();
 }
 
 void keyUpHandler(unsigned char key, int, int)
@@ -224,7 +224,7 @@ void keyUpHandler(unsigned char key, int, int)
     plane.udStopTurn();
   }
   
-  Window::displayCallback();
+  displayCallback();
 }
 
 int main(int argc, char *argv[])
@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
   
   glutInit(&argc, argv);      	      	      // initialize GLUT
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);   // open an OpenGL context with double buffering, RGB colors, and depth buffering
-  glutInitWindowSize(Window::width, Window::height);      // set initial window size
+  glutInitWindowSize(width, height);      // set initial window size
   glutCreateWindow("Looking for something?");    	                // open window and set window title
 
   glEnable(GL_NORMALIZE);
@@ -263,10 +263,10 @@ int main(int argc, char *argv[])
   glEnable(GL_LIGHT0);
   
   // Install callback functions:
-  glutDisplayFunc(Window::displayCallback);
-  glutReshapeFunc(Window::reshapeCallback);
+  glutDisplayFunc(displayCallback);
+  glutReshapeFunc(reshapeCallback);
   
-  glutIdleFunc(Window::displayCallback);
+  glutIdleFunc(displayCallback);
   glutKeyboardFunc(keyDownHandler);
   glutKeyboardUpFunc(keyUpHandler);
     
