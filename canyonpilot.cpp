@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <iostream>
 #include <math.h>
 #include <GLUT/glut.h>
@@ -12,12 +10,12 @@
 #include "Support/Scene/Bezier.h"
 #include "Support/Scene/Airplane.h"
 #include "Support/Scene/CanyonSegment.h"
+#include "Support/Scene/Canyon.h"
 #include <sys/time.h>
-#include <pthread.h>
 
 using namespace std;
 
-void displayCallback();
+pthread_mutex_t drawMutex = PTHREAD_MUTEX_INITIALIZER;
 
 int width  = 512;   // set window width in pixels here
 int height = 512;   // set window height in pixels here
@@ -35,20 +33,9 @@ int turn = 0;
 double counter = 0;
 double lastTime;
 
-double* points;
-int mapHeight;
-int mapWidth;
-int segmentCounter = 2;
-bool creatingSegment = false;
-pthread_t segmentThread;
-pthread_mutex_t drawMutex = PTHREAD_MUTEX_INITIALIZER;
-
-#define currentSegment (segmentCounter % 2)
-#define otherSegment (1 - currentSegment)
-
-CanyonSegment* map[2];
-
 Airplane plane;
+
+Canyon* canyon;
 
 TransformGroup display(Matrix4::TranslationMatrix(0, 0, -20), 1);
 
@@ -65,88 +52,10 @@ void reshapeCallback(int w, int h)
   frustum.set(-10.0, 10.0, -10.0, 10.0, 10, 1000.0);
 }
 
-void idleFunc(void) {
-  counter++;
-  displayCallback();
-}
-
-void xloadData() {
-  //points = loadPGM("Heightmap.pgm", mapWidth, mapHeight);
-  display.addChild(plane);
-}
-
-double getNoise() {
-  return (rand() % 2000 - 1000) / 10000.0;
-}
-
-void generateMap() {
-  srand ( time(NULL) );
-  
-  mapWidth = 128;
-  mapHeight = 128;
-  map[0] = new CanyonSegment(rand() % mapWidth, 0, rand() % mapWidth, mapWidth, mapHeight);
-  map[1] = new CanyonSegment(map[0]->getControlPoint(3)[X], mapHeight, 
-        map[0]->getControlPoint(3)[X] * 2 - map[0]->getControlPoint(2)[X], mapWidth, mapHeight);
-}
-
-void * threadStartPoint(void *data) {
-  generateMap();
-  pthread_exit(NULL);
-}
-
 void loadData() {
-  generateMap();
-  //pthread_t thread;
-  //pthread_create(&thread, NULL, threadStartPoint, NULL);
   lastTime = getMicroTime();
+  canyon = Canyon::getCanyon();
   display.addChild(plane);
-}
-
-void createNewSegment() {
-  printf("Creating new segment.\n");
-  CanyonSegment *oldSegment = map[currentSegment];
-  CanyonSegment *newSegment = new CanyonSegment(map[otherSegment]->getControlPoint(3)[X], mapHeight * segmentCounter, 
-        map[otherSegment]->getControlPoint(3)[X] * 2 - map[otherSegment]->getControlPoint(2)[X], mapWidth, mapHeight);
-  printf("Allocated and initialized new segment.\n");
-  
-  pthread_mutex_lock(&drawMutex);
-  map[currentSegment] = newSegment;
-  segmentCounter++;
-  delete oldSegment;
-  pthread_mutex_unlock(&drawMutex);
-  
-  creatingSegment = false;
-}
-
-void * threadCreateNewSegment(void *data) {
-  createNewSegment();
-  pthread_exit(NULL);
-}
-
-void createSegmentThread() {
-  pthread_create(&segmentThread, NULL, threadCreateNewSegment, NULL);
-}
-
-Vector3 getPoint(int x, int y) {
-  return Vector3::MakeVector(x << 2, ((double)points[mapWidth * y + x]) * 100, y << 2);
-}
-
-void setColor(double height) {
-  if (height < 10) {
-    glColor3d(0, 0, .7);
-  }
-  else if (height < 20) {
-    glColor3d(1, 1, .3);
-  }
-  else if (height < 45) {
-    glColor3d(0, .6, 0);
-  }
-  else if (height < 70) {
-    glColor3d(.3, .3, 0);
-  }
-  else {
-    glColor3d(1, 1, 1);
-  }
 }
 
 void step() {
@@ -154,10 +63,8 @@ void step() {
   plane.step(t - lastTime);
   
   Vector3 position = plane.getPosition();
-  if (position[Z] > (map[otherSegment]->getYMin() + 5) * 4 && !creatingSegment) {
-    printf("Generating new segment.\n");
-    creatingSegment = true;
-    createSegmentThread();
+  if (position[Z] > (canyon->getYMin() + 5) * 4) {
+    canyon->addSegment();
   }
   
   lastTime = t;
@@ -181,15 +88,15 @@ void displayCallback(void)
   glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
   glMaterialfv(GL_FRONT, GL_SPECULAR, diffuse);
   
-  for (int i = 0; i < 2; i++) {
-    map[i]->draw();
-  }
-  
   step();
   
   display.setCamera(identity);
   display.draw(identity);
   
+  glLoadIdentity();
+  canyon->draw();
+
+  glFlush();
   glutSwapBuffers();
   
   pthread_mutex_unlock(&drawMutex);

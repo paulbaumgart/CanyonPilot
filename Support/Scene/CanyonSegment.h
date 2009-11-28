@@ -1,10 +1,9 @@
 #ifndef _CANYONSEGMENT_H_
 #define _CANYONSEGMENT_H_
-#include "Shape3d.h"
 
 #define BEZIER_POINTS 50
 
-class CanyonSegment {
+class CanyonSegment : public Node {
   double *points;
   int width, height, xMin, yMin;
   Vector3 controlPoints[4];
