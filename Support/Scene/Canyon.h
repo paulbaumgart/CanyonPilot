@@ -24,6 +24,11 @@ class Canyon {
     return children[otherSegment]->getYMin();
   }
 
+  Vector3 getFirstPosition() {
+    Vector3 cp0 = children[currentSegment]->getControlPoint(0);
+    return cp0.scale(4);
+  }
+
   void draw() {
     for (int i = 0; i < 2; i++) {
       children[i]->draw();
@@ -57,9 +62,8 @@ class Canyon {
 
     srand(time(NULL));
 
-    xStart = rand() % mapWidth;
+    xStart = xNext = rand() % mapWidth;
     yStart = 0;
-    xNext = rand() % mapWidth;
     CanyonSegment* firstSeg = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight);
 
     xStart = firstSeg->getControlPoint(3)[X];

@@ -55,6 +55,10 @@ void reshapeCallback(int w, int h)
 void loadData() {
   lastTime = getMicroTime();
   canyon = Canyon::getCanyon();
+
+  Vector3 p0 = canyon->getFirstPosition();
+  plane.setPosition(Vector3::MakeVector(p0[X], 50, p0[Z]));
+  
   display.addChild(plane);
 }
 
