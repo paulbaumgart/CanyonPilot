@@ -1,3 +1,5 @@
+#ifndef _CANYONSEGMENT_H_
+#define _CANYONSEGMENT_H_
 #include "Shape3d.h"
 
 #define BEZIER_POINTS 50
@@ -119,3 +121,4 @@ public:
     return controlPoints[n];
   }
 };
+#endif
