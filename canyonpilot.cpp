@@ -37,6 +37,10 @@ Airplane plane;
 
 bool paused = false;
 
+int speed = 1;
+
+int timeout = 0;
+
 Canyon* canyon;
 
 TransformGroup display(Matrix4::TranslationMatrix(0, 0, -20), 1);
@@ -68,7 +72,7 @@ void step() {
   double t = getMicroTime();
   
   if (!paused)
-    plane.step(t - lastTime);
+    plane.step(speed*(t - lastTime));
   
   lastTime = t;
 
@@ -80,13 +84,20 @@ void step() {
     canyon->addSegment();
   }
 
-  if (canyon->collisionWithPoint(plane.getWingTip(true))) {
+  if (!paused && timeout > 0) {
+    timeout--;
+    cerr << timeout << endl;
+  }
+
+  if (timeout <= 0 && canyon->collisionWithPoint(plane.getWingTip(true))) {
     cerr << "Collision with right wing!" << endl;
     paused = true;
+    timeout = 25;
   }
-  else if (canyon->collisionWithPoint(plane.getWingTip(false))) {
+  else if (timeout <= 0 && canyon->collisionWithPoint(plane.getWingTip(false))) {
     cerr << "Collision with left wing!" << endl;
     paused = true;
+    timeout = 25;
   }
   
 }
@@ -145,8 +156,11 @@ void keyDownHandler(int key, int, int)
     plane.turnDown();
   }
 
-  if (-key == ' ')
+  if (-key == 'p')
     paused = !paused;
+
+  if (-key == ' ')
+    speed = 2;
   
   displayCallback();
 }
@@ -163,6 +177,9 @@ void keyUpHandler(int key, int, int)
   if (-key == ',' || -key == 'o' || key == GLUT_KEY_UP || key == GLUT_KEY_DOWN) {
     plane.udStopTurn();
   }
+
+  if (-key == ' ')
+    speed = 1;
   
   displayCallback();
 }
