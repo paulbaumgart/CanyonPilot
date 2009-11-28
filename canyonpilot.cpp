@@ -3,7 +3,6 @@
 #include <iostream>
 #include <math.h>
 #include <GLUT/glut.h>
-#include "airplane.h"
 #include "Support/Matrix4.h"
 #include "Support/Vector3.h"
 #include "Support/loadppm.h"
@@ -17,6 +16,8 @@
 #include <pthread.h>
 
 using namespace std;
+
+void displayCallback();
 
 int width  = 512;   // set window width in pixels here
 int height = 512;   // set window height in pixels here
@@ -194,37 +195,49 @@ void displayCallback(void)
   pthread_mutex_unlock(&drawMutex);
 }
 
-void keyDownHandler(unsigned char key, int, int)
+
+// Why the negated key for character keys?
+// Because GLUT_KEY_UP == 101 == 'd', so this
+// is a simple, hackish way of partitioning them.
+void keyDownHandler(int key, int, int)
 {
-  if (key == 'a') {
+  if (-key == 'a' || key == GLUT_KEY_LEFT) {
     plane.turnLeft();
   }
   
-  if (key == 'e') {
+  if (-key == 'e' || key == GLUT_KEY_RIGHT) {
     plane.turnRight();
   }
   
-  if (key == ',') {
+  if (-key == ',' || key == GLUT_KEY_UP) {
     plane.turnUp();
   }
   
-  if (key == 'o') {
+  if (-key == 'o' || key == GLUT_KEY_DOWN) {
     plane.turnDown();
   }
   
   displayCallback();
 }
 
-void keyUpHandler(unsigned char key, int, int)
+void charKeyDownHandler(unsigned char key, int a, int b) {
+  keyDownHandler(-key, a, b);
+}
+
+void keyUpHandler(int key, int, int)
 {
-  if (key == 'a' || key == 'e') {
+  if (-key == 'a' || -key == 'e' || key == GLUT_KEY_LEFT || key == GLUT_KEY_RIGHT) {
     plane.lrStopTurn();
   }
-  if (key == ',' || key == 'o') {
+  if (-key == ',' || -key == 'o' || key == GLUT_KEY_UP || key == GLUT_KEY_DOWN) {
     plane.udStopTurn();
   }
   
   displayCallback();
+}
+
+void charKeyUpHandler(unsigned char key, int a, int b) {
+  keyUpHandler(-key, a, b);
 }
 
 int main(int argc, char *argv[])
@@ -267,8 +280,10 @@ int main(int argc, char *argv[])
   glutReshapeFunc(reshapeCallback);
   
   glutIdleFunc(displayCallback);
-  glutKeyboardFunc(keyDownHandler);
-  glutKeyboardUpFunc(keyUpHandler);
+  glutSpecialFunc(keyDownHandler);
+  glutSpecialUpFunc(keyUpHandler);
+  glutKeyboardFunc(charKeyDownHandler);
+  glutKeyboardUpFunc(charKeyUpHandler);
     
   glutMainLoop();
   return 0;
