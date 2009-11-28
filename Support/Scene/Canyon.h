@@ -6,14 +6,15 @@
 
 using namespace std;
 
-#define currentSegment (segmentCounter % 2)
-#define otherSegment (1 - currentSegment)
+#define currentSegment (segmentCounter % 3)
+#define middleSegment ((segmentCounter + 1) % 3)
+#define newestSegment (currentSegment ? currentSegment - 1 : 2)
 
 extern pthread_mutex_t drawMutex;
 
 
 class Canyon {
-  public:
+public:
 
   static Canyon* getCanyon() {
     static Canyon* theCanyon = new Canyon();
@@ -21,7 +22,8 @@ class Canyon {
   }
 
   int getYMin() {
-    return children[otherSegment]->getYMin();
+    int ymin = children[middleSegment]->getYMin();
+    return ymin;
   }
 
   Vector3 getFirstPosition() {
@@ -30,8 +32,9 @@ class Canyon {
   }
 
   void draw() {
-    for (int i = 0; i < 2; i++) {
-      children[i]->draw();
+    for (int i = 0; i < 3; i++) {
+      int seg = (currentSegment + i) % 3;
+      children[seg]->draw();
     }
   }
 
@@ -42,8 +45,8 @@ class Canyon {
     }
   }
 
-  private:
-  CanyonSegment* children[2];
+private:
+  CanyonSegment* children[3];
 
   pthread_t segmentThread;
   int segmentCounter;
@@ -57,27 +60,30 @@ class Canyon {
     int xStart, yStart, xNext;
 
     mapWidth = mapHeight = 128;
-    segmentCounter = 2;
+    segmentCounter = 3;
     creatingSegment = false;
 
     srand(time(NULL));
 
     xStart = xNext = rand() % mapWidth;
     yStart = 0;
-    CanyonSegment* firstSeg = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight);
+    CanyonSegment* firstSeg = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight, NULL);
 
     xStart = firstSeg->getControlPoint(3)[X];
     yStart = mapHeight;
     // Calculate x coordinate of 2nd control point so as to maintain C1 continuity
     xNext = firstSeg->getControlPoint(3)[X] * 2 - firstSeg->getControlPoint(2)[X];
-    CanyonSegment* secondSeg = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight);
+    CanyonSegment* secondSeg = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight, firstSeg);
+
+    xStart = secondSeg->getControlPoint(3)[X];
+    yStart = 2*mapHeight;
+    // Calculate x coordinate of 2nd control point so as to maintain C1 continuity
+    xNext = secondSeg->getControlPoint(3)[X] * 2 - secondSeg->getControlPoint(2)[X];
+    CanyonSegment* thirdSeg = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight, secondSeg);
 
     children[0] = firstSeg;
     children[1] = secondSeg;
-  }
-
-  double getNoise() {
-    return (rand() % 2000 - 1000) / 10000.0;
+    children[2] = thirdSeg;
   }
 
   void createNewSegment() {
@@ -85,20 +91,22 @@ class Canyon {
     int xStart, yStart, xNext;
 
     CanyonSegment* oldSegment = children[currentSegment];
-    CanyonSegment* holdoverSegment = children[otherSegment];
+    CanyonSegment* lastSegment = children[newestSegment];
 
-    xStart = holdoverSegment->getControlPoint(3)[X];
+    xStart = lastSegment->getControlPoint(3)[X];
     yStart = mapHeight * segmentCounter;
-    xNext = holdoverSegment->getControlPoint(3)[X] * 2 - holdoverSegment->getControlPoint(2)[X];
+    xNext = lastSegment->getControlPoint(3)[X] * 2 - lastSegment->getControlPoint(2)[X];
 
-    CanyonSegment* newSegment = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight);
-    cerr << "Allocated and initialized new segment." << endl;
+    CanyonSegment* newSegment = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight, lastSegment);
 
     // Make sure the canyon isn't currently being drawn when switching out the segments
     pthread_mutex_lock(&drawMutex);
+    
     children[currentSegment] = newSegment;
-    segmentCounter++;
+    children[middleSegment]->setPrevious(NULL);
     delete oldSegment;
+    segmentCounter++;
+    
     pthread_mutex_unlock(&drawMutex);
 
     creatingSegment = false;

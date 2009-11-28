@@ -67,7 +67,7 @@ void step() {
   plane.step(t - lastTime);
   
   Vector3 position = plane.getPosition();
-  if (position[Z] > (canyon->getYMin() + 5) * 4) {
+  if (position[Z] > (canyon->getYMin() + 10) * 4) {
     canyon->addSegment();
   }
   
