@@ -87,6 +87,36 @@ public:
     }
   }
 
+  Vector3 getHeightMapCoords(Vector3 point) {
+    return Vector3::MakeVector(floor(point[X] / 4 - xMin), floor(point[Z] / 4 - yMin), 0);
+  }
+
+  bool pointOnBackSide(Vector3 point) {
+    Vector3 coords = getHeightMapCoords(point);
+    int x = coords[X];
+    int y = coords[Y];
+
+    for (int j = y - 1; j < y + 1; j++) {
+      for (int i = x - 1; i < x + 1; i++) {
+        Vector3 v1 = getPoint(i, j);
+        Vector3 v2 = getPoint(i, j + 1);
+        Vector3 v3 = getPoint(i + 1, j + 1);
+        Vector3 normal = (v3 - v2).cross(v1 - v2);
+        normal.normalize();
+
+        Vector3 w = point - v1;
+
+        if (isinf(normal[X]))
+          continue;
+
+        if (normal.dot(w) < 0)
+          return true;
+      }
+    }
+    return false;
+  }
+
+
   void setColor(double height) {
     if (height < 10) {
       glColor3d(0, 0, .7);

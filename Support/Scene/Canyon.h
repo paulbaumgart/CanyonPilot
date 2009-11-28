@@ -45,6 +45,10 @@ public:
     }
   }
 
+  bool collisionWithPoint(Vector3 point) {
+    return children[currentSegment]->pointOnBackSide(point);
+  }
+
 private:
   CanyonSegment* children[3];
 
