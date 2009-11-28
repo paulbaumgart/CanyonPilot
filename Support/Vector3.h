@@ -10,7 +10,7 @@ class Vector3 : public Vector4
     Vector3(double, double, double);
     Vector3 cross(Vector3);
     double length();
-    void normalize();
+    Vector3 normalize();
     
     Vector3 add(Vector3);
     Vector3 operator+(Vector3);

@@ -29,8 +29,8 @@ double Vector3::length() {
   return sqrt(pow(v[0], 2) + pow(v[1], 2) + pow(v[2], 2));
 }
 
-void Vector3::normalize() {
-  scale(1 / length());
+Vector3 Vector3::normalize() {
+  return scale(1 / length());
 }
 
 
