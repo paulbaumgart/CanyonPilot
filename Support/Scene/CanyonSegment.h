@@ -6,21 +6,24 @@
 using namespace std;
 
 #define BEZIER_POINTS 50
+#define DIFFICULTY_COEFFICIENT(d) (sqrt((d) + 2.0) / 40)
 
 class CanyonSegment : public Node {
 
 private:
   double* points;
-  int width, height, xMin, yMin;
+  int width, height, xMin, yMin, startDifficulty, endDifficulty;
   Vector3 controlPoints[4];
   CanyonSegment* previous;
   
 public:  
-  CanyonSegment(int xStart, int yStart, int xNext, int w, int h, CanyonSegment* prev) {
+  CanyonSegment(int xStart, int yStart, int xNext, int w, int h, CanyonSegment* prev, int startDiff, int endDiff) {
     this->width = w;
     this->height = h;
     this->yMin = yStart;
     this->previous = prev;
+    this->startDifficulty = startDiff;
+    this->endDifficulty = endDiff;
     
     int midpointX = (xStart + xNext) / 2;
     int newControlX1 = (rand() % width) - (width / 2) + midpointX;
@@ -30,9 +33,10 @@ public:
     controlPoints[2] = Vector3::MakeVector(newControlX1, yStart + height * 2 / 3.0, 0);
     controlPoints[3] = Vector3::MakeVector(newControlX2, yStart + height, 0);
     
-    this->xMin = fmin(controlPoints[0][X], fmin(controlPoints[1][X], fmin(controlPoints[2][X], controlPoints[3][X]))) - 30;
-
-    int xMax = fmax(controlPoints[0][X], fmax(controlPoints[1][X], fmax(controlPoints[2][X], controlPoints[3][X]))) + 30;
+    int fuzzFactor = (1.0 / DIFFICULTY_COEFFICIENT(min(startDiff, endDiff))) + 5;
+    printf("Fuzz: %d\n", fuzzFactor);
+    this->xMin = fmin(controlPoints[0][X], fmin(controlPoints[1][X], fmin(controlPoints[2][X], controlPoints[3][X]))) - fuzzFactor;
+    int xMax = fmax(controlPoints[0][X], fmax(controlPoints[1][X], fmax(controlPoints[2][X], controlPoints[3][X]))) + fuzzFactor;
     this->width = xMax - xMin;
     
     Bezier b(1);
@@ -50,12 +54,17 @@ public:
     for (int j = 0; j < height; j++) {
       for (int i = 0; i < width; i++) {
         double dist = height + width;
-        for (double t = -2 * stepAmount; t < 1 + (2 * stepAmount); t += stepAmount) {
+        double bestT = 0;
+        for (double t = stepAmount; t < 1 + stepAmount; t += stepAmount) {
           Vector3 coords = multiplierMatrix.multiply(Vector3::BezierVector(t));
           double distToCoords = sqrt(pow(i - coords[X], 2) + pow(j - coords[Y], 2));
-          dist = (distToCoords < dist) ? distToCoords : dist;
+          if (distToCoords < dist) {
+            dist = distToCoords;
+            bestT = t;
+          }
         }
-        double pointHeight = fmax(fmin(pow(dist / 10, 2) + getNoise(), 1), 0);
+        double difficulty = fmin(fmax(startDiff + (endDiff - startDiff) * bestT, startDiff), endDiff);
+        double pointHeight = fmax(fmin(pow(dist * DIFFICULTY_COEFFICIENT(difficulty), 2) + getNoise(), 1), 0);
         points[j * width + i] = pointHeight * 100;
       }
     }

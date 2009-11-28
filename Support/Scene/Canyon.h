@@ -67,19 +67,19 @@ private:
 
     xStart = xNext = rand() % mapWidth;
     yStart = 0;
-    CanyonSegment* firstSeg = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight, NULL);
+    CanyonSegment* firstSeg = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight, NULL, 0, 1);
 
     xStart = firstSeg->getControlPoint(3)[X];
     yStart = mapHeight;
     // Calculate x coordinate of 2nd control point so as to maintain C1 continuity
     xNext = firstSeg->getControlPoint(3)[X] * 2 - firstSeg->getControlPoint(2)[X];
-    CanyonSegment* secondSeg = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight, firstSeg);
+    CanyonSegment* secondSeg = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight, firstSeg, 1, 2);
 
     xStart = secondSeg->getControlPoint(3)[X];
     yStart = 2*mapHeight;
     // Calculate x coordinate of 2nd control point so as to maintain C1 continuity
     xNext = secondSeg->getControlPoint(3)[X] * 2 - secondSeg->getControlPoint(2)[X];
-    CanyonSegment* thirdSeg = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight, secondSeg);
+    CanyonSegment* thirdSeg = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight, secondSeg, 2, 3);
 
     children[0] = firstSeg;
     children[1] = secondSeg;
@@ -97,7 +97,7 @@ private:
     yStart = mapHeight * segmentCounter;
     xNext = lastSegment->getControlPoint(3)[X] * 2 - lastSegment->getControlPoint(2)[X];
 
-    CanyonSegment* newSegment = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight, lastSegment);
+    CanyonSegment* newSegment = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight, lastSegment, segmentCounter, segmentCounter + 1);
 
     // Make sure the canyon isn't currently being drawn when switching out the segments
     pthread_mutex_lock(&drawMutex);
