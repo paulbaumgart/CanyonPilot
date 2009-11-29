@@ -72,7 +72,14 @@ void loadData() {
 
 void step() {
   double t = getMicroTime();
-  printf("Framerate: %.2f\n", 1 / (t - lastTime));
+  static int counter = 0;
+  if (counter <= 0) {
+    fprintf(stderr, "Framerate: %.2f              \r", 1 / (t - lastTime));
+    counter = 20;
+  }
+  else {
+    counter--;
+  }
     
   if (!paused) {
     plane.step(speed*(t - lastTime));
