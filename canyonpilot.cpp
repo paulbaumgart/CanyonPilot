@@ -27,6 +27,8 @@ double getMicroTime() {
   return t.tv_sec + (t.tv_usec / 1.0e6);
 }
 
+void togglePaused();
+
 Frustum frustum;
 Matrix4 baseMatrix;
 int turn = 0;
@@ -70,6 +72,7 @@ void loadData() {
 
 void step() {
   double t = getMicroTime();
+  printf("Framerate: %.2f\n", 1 / (t - lastTime));
     
   if (!paused) {
     plane.step(speed*(t - lastTime));
@@ -92,12 +95,12 @@ void step() {
 
   if (timeout <= 0 && canyon->collisionWithPoint(plane.getWingTip(true))) {
     cerr << "Collision with right wing!" << endl;
-    paused = true;
+    togglePaused();
     timeout = 25;
   }
   else if (timeout <= 0 && canyon->collisionWithPoint(plane.getWingTip(false))) {
     cerr << "Collision with left wing!" << endl;
-    paused = true;
+    togglePaused();
     timeout = 25;
   }
 }
@@ -161,7 +164,7 @@ void keyDownHandler(int key, int, int)
   }
 
   if (-key == 'p')
-    paused = !paused;
+    togglePaused();
 
   if (-key == ' ')
     speed = 2;
@@ -190,6 +193,18 @@ void keyUpHandler(int key, int, int)
 
 void charKeyUpHandler(unsigned char key, int a, int b) {
   keyUpHandler(-key, a, b);
+}
+
+void togglePaused() {
+  if (paused) {
+    glutIdleFunc(displayCallback);
+    lastTime = getMicroTime();
+  }
+  else {
+    glutIdleFunc(NULL);
+  }
+  
+  paused = !paused;
 }
 
 int main(int argc, char *argv[])

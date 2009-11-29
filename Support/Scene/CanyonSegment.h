@@ -13,7 +13,7 @@ class CanyonSegment : public Node {
 
 private:
   double* points;
-  int width, height, xMin, yMin, startDifficulty, endDifficulty;
+  int width, height, xMin, yMin, startDifficulty, endDifficulty, xStartOffset, xEndOffset;
   Vector3 controlPoints[4];
   CanyonSegment* previous;
   int collidedx, collidedy;
@@ -42,6 +42,8 @@ public:
     this->xMin = fmin(controlPoints[0][X], fmin(controlPoints[1][X], fmin(controlPoints[2][X], controlPoints[3][X]))) - fudgeFactor;
     int xMax = fmax(controlPoints[0][X], fmax(controlPoints[1][X], fmax(controlPoints[2][X], controlPoints[3][X]))) + fudgeFactor;
     this->width = xMax - xMin;
+    this->xStartOffset = 0;
+    this->xEndOffset = width;
     
     Bezier b(1);
 
@@ -55,8 +57,11 @@ public:
     Matrix4 multiplierMatrix = b.getMatrix(0).multiply(Matrix4::BezierMatrix());
     double stepAmount = 1.0 / BEZIER_POINTS;
 
-    for (int j = 0; j < height; j++) {
-      for (int i = 0; i < width; i++) {
+    bool foundFirst = false;
+    
+    for (int i = 0; i < width; i++) {
+      bool foundNonOne = false;
+      for (int j = 0; j < height; j++) {
         double dist = height + width;
         double bestT = 0;
         for (double t = -5 * stepAmount; t < 1 + 5 * stepAmount; t += stepAmount) {
@@ -70,8 +75,25 @@ public:
         double difficulty = fmin(fmax(startDiff + (endDiff - startDiff) * bestT, startDiff), endDiff);
         double pointHeight = fmax(fmin(pow(dist * DIFFICULTY_COEFFICIENT(difficulty), 2) + getNoise(), 1), 0);
         points[j * width + i] = pointHeight * 100;
+        if (pointHeight != 1.0) {
+          foundNonOne = true;
+          foundFirst = true;
+        }
+      }
+      if (!foundNonOne) {
+        if (foundFirst) {
+          if (abs(xStartOffset - i) > 5) {
+            xEndOffset = min(xEndOffset, i);
+          }
+        }
+        else {
+          xStartOffset = max(xStartOffset, i);
+        }
       }
     }
+    
+    xStartOffset = max(xStartOffset - 5, 0);
+    xEndOffset = min(xEndOffset + 5, width);
   }
   
   ~CanyonSegment() {
@@ -152,13 +174,13 @@ public:
   }
   
   void draw() {
-    glBegin(GL_QUADS);
+    glBegin(GL_QUAD_STRIP);
     glColor3f(.8, .8, .8);
 
     // Connect to previous segment
     if (previous) {
       int dXMin = xMin - previous->getXMin();
-      for (int i = 0; i < width - 1; i++) {
+      for (int i = xStartOffset; i <= xEndOffset; i++) {
         Vector3 v1 = previous->getPoint(i + dXMin, previous->getHeight()-1);
         Vector3 v2 = getPoint(i, 0);
         Vector3 v3 = getPoint(i + 1, 0);
@@ -175,16 +197,19 @@ public:
         glVertex3dv(v1.getPointer());
         setColor(v2[Y]);
         glVertex3dv(v2.getPointer());
-        setColor(v3[Y]);
+        /*setColor(v3[Y]);
         glVertex3dv(v3.getPointer());
         setColor(v4[Y]);
-        glVertex3dv(v4.getPointer());
+        glVertex3dv(v4.getPointer());*/
       }
     }
+    
+    glEnd();
 
     // Draw this segment
-    for (int j = 0; j < height - 1; j++) {
-      for (int i = 0; i < width - 1; i++) {
+    for (int j = 0; j < height; j++) {
+      glBegin(GL_QUAD_STRIP);
+      for (int i = xStartOffset; i <= xEndOffset; i++) {
         bool makeRed = (i == collidedx && j == collidedy);
         Vector3 v1 = getPoint(i, j);
         Vector3 v2 = getPoint(i, j + 1);
@@ -197,13 +222,14 @@ public:
         glVertex3dv(v1.getPointer());
         makeRed ? glColor3d(1,0,0) : setColor(v2[Y]);
         glVertex3dv(v2.getPointer());
-        makeRed ? glColor3d(1,0,0)  : setColor(v3[Y]);
+        /*makeRed ? glColor3d(1,0,0)  : setColor(v3[Y]);
         glVertex3dv(v3.getPointer());
         makeRed ? glColor3d(1,0,0)  : setColor(v4[Y]);
-        glVertex3dv(v4.getPointer());
+        glVertex3dv(v4.getPointer());*/
       }
+      glEnd();
     }
-    glEnd();
+    
   }
   
   int getYMin() {

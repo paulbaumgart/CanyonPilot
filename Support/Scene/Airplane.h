@@ -15,7 +15,7 @@
 #define LR_TURN_MAG 40
 #define UD_TURN_MAG 1
 #define ROTATIONAL_MAG 2
-#define SPEED 90
+#define SPEED 160
 
 class Airplane : public TransformGroup {
   public:
