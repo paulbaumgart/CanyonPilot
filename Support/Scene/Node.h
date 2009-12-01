@@ -21,12 +21,11 @@ class Node {
   protected:
     virtual void drawObject(Matrix4& mat) {};
     BoundingSphere boundingSphere;
-  public:  
-    virtual void setCamera(Matrix4& mat) {};
+  public:
+    virtual void orient(Vector4 position, Vector4 velocity, Vector4 acceleration) {}
+    virtual void setCamera(Matrix4& mat) {}
     virtual void draw(Matrix4& mat) {
-      //if (!culling || frustum.intersectsSphere(mat.multiply(boundingSphere.center), boundingSphere.radius)) {
-        drawObject(mat);
-      //}
+      drawObject(mat);
     }
 };
 

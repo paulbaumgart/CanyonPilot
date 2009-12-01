@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <limits>
+#include "Bezier.h"
 using namespace std;
 
 
@@ -184,9 +185,8 @@ public:
         Vector3 v1 = previous->getPoint(i + dXMin, previous->getHeight()-1);
         Vector3 v2 = getPoint(i, 0);
         Vector3 v3 = getPoint(i + 1, 0);
-        Vector3 v4 = previous->getPoint(i + dXMin + 1, previous->getHeight()-1);
 
-        if (isinf(v1[X]) || isinf(v4[X])) {
+        if (isinf(v1[X]) || isinf(v3[X])) {
           continue;
         }
         
@@ -197,10 +197,6 @@ public:
         glVertex3dv(v1.getPointer());
         setColor(v2[Y]);
         glVertex3dv(v2.getPointer());
-        /*setColor(v3[Y]);
-        glVertex3dv(v3.getPointer());
-        setColor(v4[Y]);
-        glVertex3dv(v4.getPointer());*/
       }
     }
     
@@ -214,7 +210,6 @@ public:
         Vector3 v1 = getPoint(i, j);
         Vector3 v2 = getPoint(i, j + 1);
         Vector3 v3 = getPoint(i + 1, j + 1);
-        Vector3 v4 = getPoint(i + 1, j);
         Vector3 normal = (v3 - v2).cross(v1 - v2);
         normal.normalize();
         glNormal3dv(normal.getPointer());
@@ -222,10 +217,6 @@ public:
         glVertex3dv(v1.getPointer());
         makeRed ? glColor3d(1,0,0) : setColor(v2[Y]);
         glVertex3dv(v2.getPointer());
-        /*makeRed ? glColor3d(1,0,0)  : setColor(v3[Y]);
-        glVertex3dv(v3.getPointer());
-        makeRed ? glColor3d(1,0,0)  : setColor(v4[Y]);
-        glVertex3dv(v4.getPointer());*/
       }
       glEnd();
     }

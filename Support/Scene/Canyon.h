@@ -69,7 +69,7 @@ private:
 
     srand(time(NULL));
 
-    xStart = xNext = rand() % mapWidth;
+    xStart = xNext = 0;
     yStart = 0;
     CanyonSegment* firstSeg = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight, NULL, 0, 1);
 

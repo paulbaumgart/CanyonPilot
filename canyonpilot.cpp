@@ -6,12 +6,11 @@
 #include "Support/loadppm.h"
 #include "Support/loadpgm.h"
 #include "Support/Scene/TransformGroup.h"
-#include "Support/Scene/Frustum.h"
-#include "Support/Scene/Bezier.h"
 #include "Support/Scene/Airplane.h"
 #include "Support/Scene/CanyonSegment.h"
 #include "Support/Scene/Canyon.h"
-#include <sys/time.h>
+#include "GameController.h"
+#include "Util.h"
 
 using namespace std;
 
@@ -20,32 +19,14 @@ pthread_mutex_t drawMutex = PTHREAD_MUTEX_INITIALIZER;
 int width  = 512;   // set window width in pixels here
 int height = 512;   // set window height in pixels here
 
-double getMicroTime() {
-  struct timeval t;
-  gettimeofday(&t, NULL);
-  
-  return t.tv_sec + (t.tv_usec / 1.0e6);
-}
-
 void togglePaused();
 
-Frustum frustum;
-Matrix4 baseMatrix;
-int turn = 0;
-double counter = 0;
 double lastTime;
-
-Airplane plane;
+Canyon *canyon;
 
 bool paused = false;
 
-int speed = 1;
-
-int timeout = 2;
-
-Canyon* canyon;
-
-TransformGroup display(Matrix4::TranslationMatrix(0, 0, -20), 1);
+GameController gameController;
 
 //----------------------------------------------------------------------------
 // Callback method called when window is resized.
@@ -57,17 +38,13 @@ void reshapeCallback(int w, int h)
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glFrustum(-10.0, 10.0, -10.0, 10.0, 10, 100000.0); // set perspective projection viewing frustum
-  frustum.set(-10.0, 10.0, -10.0, 10.0, 10, 100000.0);
 }
 
 void loadData() {
-  lastTime = getMicroTime();
   canyon = Canyon::getCanyon();
-
-  Vector3 p0 = canyon->getFirstPosition();
-  plane.setPosition(Vector3::MakeVector(p0[X], 50, p0[Z]));
+  gameController.initialize();
   
-  display.addChild(plane);
+  lastTime = getMicroTime();
 }
 
 void step() {
@@ -80,36 +57,14 @@ void step() {
   else {
     counter--;
   }
-    
-  if (!paused) {
-    plane.step(speed*(t - lastTime));
-  }
-
-  lastTime = t;
-
+  
   if (paused) {
     return;
   }
-  
-  Vector3 position = plane.getPosition();
-  if (position[Z] > (canyon->getYMin() + 10) * 4) {
-    canyon->addSegment();
-  }
 
-  if (!paused && timeout > 0) {
-    timeout--;
-  }
+  gameController.step(t - lastTime);
 
-  if (timeout <= 0 && canyon->collisionWithPoint(plane.getWingTip(true))) {
-    cerr << "Collision with right wing!" << endl;
-    togglePaused();
-    timeout = 25;
-  }
-  else if (timeout <= 0 && canyon->collisionWithPoint(plane.getWingTip(false))) {
-    cerr << "Collision with left wing!" << endl;
-    togglePaused();
-    timeout = 25;
-  }
+  lastTime = t;
 }
 
 //----------------------------------------------------------------------------
@@ -118,7 +73,6 @@ void step() {
 void displayCallback(void)
 {  
   pthread_mutex_lock(&drawMutex);
-
 
   Matrix4 identity;
 
@@ -134,13 +88,7 @@ void displayCallback(void)
   
   step();
 
-  display.setCamera(identity);
-  display.draw(identity);
-    
-  glLoadIdentity();
-
-  canyon->draw();
-
+  gameController.draw();
 
   glFlush();
   glutSwapBuffers();
@@ -154,27 +102,10 @@ void displayCallback(void)
 // is a simple, hackish way of partitioning them.
 void keyDownHandler(int key, int, int)
 {
-  if (-key == 'a' || key == GLUT_KEY_LEFT) {
-    plane.turnLeft();
-  }
-  
-  if (-key == 'e' || key == GLUT_KEY_RIGHT) {
-    plane.turnRight();
-  }
-  
-  if (-key == ',' || key == GLUT_KEY_UP) {
-    plane.turnUp();
-  }
-  
-  if (-key == 'o' || key == GLUT_KEY_DOWN) {
-    plane.turnDown();
-  }
-
   if (-key == 'p')
     togglePaused();
-
-  if (-key == ' ')
-    speed = 2;
+    
+  gameController.keyDownHandler(key);
   
   displayCallback();
 }
@@ -185,15 +116,7 @@ void charKeyDownHandler(unsigned char key, int a, int b) {
 
 void keyUpHandler(int key, int, int)
 {
-  if (-key == 'a' || -key == 'e' || key == GLUT_KEY_LEFT || key == GLUT_KEY_RIGHT) {
-    plane.lrStopTurn();
-  }
-  if (-key == ',' || -key == 'o' || key == GLUT_KEY_UP || key == GLUT_KEY_DOWN) {
-    plane.udStopTurn();
-  }
-
-  if (-key == ' ')
-    speed = 1;
+  gameController.keyUpHandler(key);
   
   displayCallback();
 }

@@ -28,7 +28,7 @@ class Bezier : public Shape3d {
       return segments[segNumber];
     }
     
-    void addPoint(double x, double y) {
+    void addPoint(double x, double y, double z) {
       int numSegments = pointCounter / 3;
       int pointOffset = pointCounter % 3;
       
@@ -36,28 +36,46 @@ class Bezier : public Shape3d {
         reallocate(maxSegments + 1);
         segments[numSegments].setElement(0, 0, segments[numSegments - 1].getElement(3, 0));
         segments[numSegments].setElement(0, 1, segments[numSegments - 1].getElement(3, 1));
+        segments[numSegments].setElement(0, 2, segments[numSegments - 1].getElement(3, 2));
       }
       
       if (pointCounter == 0) {
         segments[numSegments].setElement(0, 0, x);
         segments[numSegments].setElement(0, 1, y);
+        segments[numSegments].setElement(0, 2, z);
       }
       else if (pointOffset == 0 && numSegments == maxSegments) {
         segments[numSegments - 1].setElement(3, 0, x);
         segments[numSegments - 1].setElement(3, 1, y);
+        segments[numSegments - 1].setElement(3, 2, z);
       }
       else if (pointOffset == 0) {
         segments[numSegments - 1].setElement(3, 0, x);
         segments[numSegments - 1].setElement(3, 1, y);
+        segments[numSegments - 1].setElement(3, 2, z);
         segments[numSegments].setElement(0, 0, x);
         segments[numSegments].setElement(0, 1, y);
+        segments[numSegments].setElement(0, 2, z);
       }
       else {
         segments[numSegments].setElement(pointOffset, 0, x);
         segments[numSegments].setElement(pointOffset, 1, y);
+        segments[numSegments].setElement(pointOffset, 2, z);
       }
       
       pointCounter++;
+    }
+    
+    void addPoint(double x, double y) {
+      addPoint(x, y, 0);
+    }
+    
+    Vector3 getPoint(double t) {
+      return getMatrix((int) t).multiply(Matrix4::BezierMatrix()).multiply(Vector3::BezierVector(fmod(t, 1)));
+    }
+    
+    Vector4 getTangent(double t) {
+      return getMatrix((int) t).multiply(Matrix4::BezierMatrix()).multiply(Vector3::BezierDerivativeVector(fmod(t, 1)));
     }
 
     Vector3 getVertex(Vector3& coord, double rot) {

@@ -4,6 +4,7 @@
 #include "TransformGroup.h"
 #include "Rect.h"
 #include "Camera.h"
+#include "BezierTrack.h"
 #include <math.h>
 
 #define LEFT -1
@@ -114,6 +115,15 @@ class Airplane : public TransformGroup {
       
       getMatrix() = Matrix4::TranslationMatrix(position).multiply(
                     Matrix4::RotationYMatrix(angle * 180 / M_PI + 90));
+    }
+    
+    virtual void orient(Vector4 position, Vector4 velocity, Vector4 acceleration) {
+      double angleXZ = atan2(-velocity[Z], velocity[X]) * 180 / M_PI + 90;
+      double angleY = asin(velocity[Y]) * 180 / M_PI;
+      
+      airplane->getMatrix() = Matrix4::RotationXMatrix(angleY);
+      
+      getMatrix() = Matrix4::TranslationMatrix(position).multiply(Matrix4::RotationYMatrix(angleXZ));
     }
     
     void turnLeft() {
