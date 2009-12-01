@@ -117,11 +117,12 @@ class Airplane : public TransformGroup {
                     Matrix4::RotationYMatrix(angle * 180 / M_PI + 90));
     }
     
-    virtual void orient(Vector4 position, Vector4 velocity, Vector4 acceleration) {
+    virtual void orient(Vector3 position, Vector3 velocity, Vector3 acceleration) {
       double angleXZ = atan2(-velocity[Z], velocity[X]) * 180 / M_PI + 90;
-      double angleY = asin(velocity[Y]) * 180 / M_PI;
+      double angleY = asin(velocity.normalize()[Y]) * 180 / M_PI;
+      printf("angleY: %f\n", angleY);
       
-      airplane->getMatrix() = Matrix4::RotationXMatrix(angleY);
+      airplane->getMatrix() = Matrix4::RotationXMatrix(-angleY);
       
       getMatrix() = Matrix4::TranslationMatrix(position).multiply(Matrix4::RotationYMatrix(angleXZ));
     }

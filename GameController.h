@@ -18,7 +18,6 @@ public:
     speed = 1;
     timeout = 2;
     
-    //canyon = Canyon::getCanyon();
     display = new TransformGroup(Matrix4::TranslationMatrix(0, 0, 0), 1);
     airplane = new Airplane();
 

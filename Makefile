@@ -1,5 +1,5 @@
 LIBS = -framework GLUT -framework OpenGL -framework Carbon
-HEADERS = Support/*.h Support/Scene/*.h
+HEADERS = Support/*.h Support/Scene/*.h *.h
 SOURCES = Support/*.cpp Support/Scene/*.cpp
 
 default: canyonpilot

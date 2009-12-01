@@ -20,9 +20,10 @@ class Vector3 : public Vector4
     bool operator==(Vector3);
     
     static Vector3 MakeVector(double, double, double);
+    static Vector3 MakeVector(double, double, double, double);
     static Vector3 MakeVector(double[]);
-    static Vector3 Vector3::BezierVector(double);
-    static Vector4 Vector3::BezierDerivativeVector(double);
+    static Vector3 BezierVector(double);
+    static Vector3 BezierDerivativeVector(double);
 };
 
 #endif

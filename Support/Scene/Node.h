@@ -22,7 +22,7 @@ class Node {
     virtual void drawObject(Matrix4& mat) {};
     BoundingSphere boundingSphere;
   public:
-    virtual void orient(Vector4 position, Vector4 velocity, Vector4 acceleration) {}
+    virtual void orient(Vector3 position, Vector3 velocity, Vector3 acceleration) {}
     virtual void setCamera(Matrix4& mat) {}
     virtual void draw(Matrix4& mat) {
       drawObject(mat);

@@ -74,7 +74,7 @@ class Bezier : public Shape3d {
       return getMatrix((int) t).multiply(Matrix4::BezierMatrix()).multiply(Vector3::BezierVector(fmod(t, 1)));
     }
     
-    Vector4 getTangent(double t) {
+    Vector3 getTangent(double t) {
       return getMatrix((int) t).multiply(Matrix4::BezierMatrix()).multiply(Vector3::BezierDerivativeVector(fmod(t, 1)));
     }
 

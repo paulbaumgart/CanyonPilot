@@ -21,6 +21,7 @@ class BezierTrack : public Group {
     
     void step(double tStep) {
       t += tStep;
+      printf("%f\n", t);
       
       for (int i = 0; i < numChildren; i++) {
         Vector3 v = Vector3::MakeVector(0, 0, 0);

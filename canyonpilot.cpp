@@ -10,6 +10,8 @@
 #include "Support/Scene/CanyonSegment.h"
 #include "Support/Scene/Canyon.h"
 #include "GameController.h"
+#include "CutsceneController.h"
+#include "Controller.h"
 #include "Util.h"
 
 using namespace std;
@@ -27,6 +29,8 @@ Canyon *canyon;
 bool paused = false;
 
 GameController gameController;
+CutsceneController cutsceneController;
+Controller *activeController;
 
 //----------------------------------------------------------------------------
 // Callback method called when window is resized.
@@ -43,6 +47,9 @@ void reshapeCallback(int w, int h)
 void loadData() {
   canyon = Canyon::getCanyon();
   gameController.initialize();
+  cutsceneController.initialize();
+  
+  activeController = &cutsceneController;
   
   lastTime = getMicroTime();
 }
@@ -61,8 +68,12 @@ void step() {
   if (paused) {
     return;
   }
+  
+  if (activeController == &cutsceneController && cutsceneController.isDone()) {
+    activeController = &gameController;
+  } 
 
-  gameController.step(t - lastTime);
+  activeController->step(t - lastTime);
 
   lastTime = t;
 }
@@ -88,7 +99,7 @@ void displayCallback(void)
   
   step();
 
-  gameController.draw();
+  activeController->draw();
 
   glFlush();
   glutSwapBuffers();
@@ -105,7 +116,7 @@ void keyDownHandler(int key, int, int)
   if (-key == 'p')
     togglePaused();
     
-  gameController.keyDownHandler(key);
+  activeController->keyDownHandler(key);
   
   displayCallback();
 }
@@ -116,7 +127,7 @@ void charKeyDownHandler(unsigned char key, int a, int b) {
 
 void keyUpHandler(int key, int, int)
 {
-  gameController.keyUpHandler(key);
+  activeController->keyUpHandler(key);
   
   displayCallback();
 }

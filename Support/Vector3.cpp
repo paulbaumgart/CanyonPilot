@@ -60,6 +60,12 @@ Vector3 Vector3::MakeVector(double x, double y, double z) {
   return newVector;
 }
 
+Vector3 Vector3::MakeVector(double x, double y, double z, double w) {
+  Vector3 newVector(x, y, z);
+  newVector[3] = w;
+  return newVector;
+}
+
 Vector3 Vector3::MakeVector(double vertices[]) {
   Vector3 newVector(vertices[0], vertices[1], vertices[2]);
   return newVector;
@@ -69,6 +75,6 @@ Vector3 Vector3::BezierVector(double t) {
   return MakeVector(t * t * t, t * t, t);
 }
 
-Vector4 Vector3::BezierDerivativeVector(double t) {
-  return Vector4::MakeVector(3 * t * t, 2 * t, 1, 0);
+Vector3 Vector3::BezierDerivativeVector(double t) {
+  return MakeVector(3 * t * t, 2 * t, 1, 0);
 }
