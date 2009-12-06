@@ -78,3 +78,7 @@ Vector3 Vector3::BezierVector(double t) {
 Vector3 Vector3::BezierDerivativeVector(double t) {
   return MakeVector(3 * t * t, 2 * t, 1, 0);
 }
+
+Vector3 Vector3::BezierSecondDerivativeVector(double t) {
+  return MakeVector(6 * t, 2, 0, 0);
+}

@@ -158,6 +158,16 @@ int main(int argc, char *argv[])
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);   // open an OpenGL context with double buffering, RGB colors, and depth buffering
   glutInitWindowSize(width, height);      // set initial window size
   glutCreateWindow("Looking for something?");    	                // open window and set window title
+  
+  float fogColor[] = {0.5, 0.5, 0.5, 1.0};
+                                          
+  glFogi(GL_FOG_MODE, GL_LINEAR);
+  glFogfv(GL_FOG_COLOR, fogColor);
+  glFogf(GL_FOG_DENSITY, 0.35f);
+  glHint(GL_FOG_HINT, GL_DONT_CARE);
+  glFogf(GL_FOG_START, 100.0f);
+  glFogf(GL_FOG_END, 500.0f);
+  glEnable(GL_FOG);
 
   glEnable(GL_NORMALIZE);
   glCullFace(GL_BACK);

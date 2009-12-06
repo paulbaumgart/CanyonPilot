@@ -64,14 +64,15 @@ private:
     int xStart, yStart, xNext;
 
     mapWidth = mapHeight = 128;
+    mapWidth = 128;
     segmentCounter = 3;
     creatingSegment = false;
 
     srand(time(NULL));
 
     xStart = xNext = 0;
-    yStart = 0;
-    CanyonSegment* firstSeg = new CanyonSegment(xStart, yStart, xNext, mapWidth, mapHeight, NULL, 0, 1);
+    yStart = -384;
+    CanyonSegment* firstSeg = new CanyonSegment(xStart, yStart, mapWidth, mapHeight + 384, 1);
 
     xStart = firstSeg->getControlPoint(3)[X];
     yStart = mapHeight;

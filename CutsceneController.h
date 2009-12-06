@@ -42,10 +42,14 @@ public:
   virtual void draw() {
     Matrix4 identity;
     
-    display->setCamera(identity);
-    display->draw(identity);
-
+    glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+    
+    display->setCamera(identity);
+    
+    glPushMatrix();
+    display->draw(identity);
+    glPopMatrix();
     
     canyon->draw();
   }
@@ -54,7 +58,7 @@ public:
   virtual void keyUpHandler(int key) {}
   
   bool isDone() {
-    return track->getT() >= 2;
+    return track->getT() >= 1.999;
   }
 private:
   Airplane *airplane;

@@ -22,7 +22,7 @@ public:
     airplane = new Airplane();
 
     Vector3 p0 = canyon->getFirstPosition();
-    airplane->setPosition(Vector3::MakeVector(p0[X], 50, p0[Z]));
+    //airplane->setPosition(Vector3::MakeVector(p0[X], 50, p0[Z]));
     
     display->addChild(*airplane);
   }
@@ -54,10 +54,14 @@ public:
   virtual void draw() {
     Matrix4 identity;
     
-    display->setCamera(identity);
-    display->draw(identity);
-
+    glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+    
+    glPushMatrix();
+    display->draw(identity);
+    glPopMatrix();
+    
+    display->setCamera(identity);
     
     canyon->draw();
   }

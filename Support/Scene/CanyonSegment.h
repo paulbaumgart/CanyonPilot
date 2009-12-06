@@ -13,14 +13,31 @@ using namespace std;
 class CanyonSegment : public Node {
 
 private:
-  double* points;
+  double *points, *terrain;
   int width, height, xMin, yMin, startDifficulty, endDifficulty, xStartOffset, xEndOffset;
   Vector3 controlPoints[4];
   CanyonSegment* previous;
   int collidedx, collidedy;
-
+  int terrainSize;
   
-public:  
+public:
+  CanyonSegment(int xStart, int yStart, int w, int h, int difficulty) {
+    this->width = w;
+    this->height = h;
+    this->yMin = yStart;
+    this->previous = NULL;
+    this->startDifficulty = difficulty;
+    this->endDifficulty = difficulty;
+    this->collidedx = this->collidedy = -1;
+    
+    controlPoints[0] = Vector3::MakeVector(xStart, yStart, 0);
+    controlPoints[1] = Vector3::MakeVector(xStart, yStart + height / 3.0, 0);
+    controlPoints[2] = Vector3::MakeVector(xStart, yStart + height * 2 / 3.0, 0);
+    controlPoints[3] = Vector3::MakeVector(xStart, yStart + height, 0);
+    
+    initialize();
+  }
+  
   CanyonSegment(int xStart, int yStart, int xNext, int w, int h, CanyonSegment* prev, int startDiff, int endDiff) {
     this->width = w;
     this->height = h;
@@ -38,7 +55,11 @@ public:
     controlPoints[2] = Vector3::MakeVector(newControlX1, yStart + height * 2 / 3.0, 0);
     controlPoints[3] = Vector3::MakeVector(newControlX2, yStart + height, 0);
     
-    int fudgeFactor = 2*(1.0 / DIFFICULTY_COEFFICIENT(min(startDiff, endDiff))) + 5;
+    initialize();
+  }
+  
+  void initialize() {  
+    int fudgeFactor = 2*(1.0 / DIFFICULTY_COEFFICIENT(min(startDifficulty, endDifficulty))) + 5;
     printf("Fudge: %d\n", fudgeFactor);
     this->xMin = fmin(controlPoints[0][X], fmin(controlPoints[1][X], fmin(controlPoints[2][X], controlPoints[3][X]))) - fudgeFactor;
     int xMax = fmax(controlPoints[0][X], fmax(controlPoints[1][X], fmax(controlPoints[2][X], controlPoints[3][X]))) + fudgeFactor;
@@ -57,8 +78,12 @@ public:
 
     Matrix4 multiplierMatrix = b.getMatrix(0).multiply(Matrix4::BezierMatrix());
     double stepAmount = 1.0 / BEZIER_POINTS;
+    
+    terrain = createTerrain(height, .9);
 
     bool foundFirst = false;
+    
+    printf("height: %d, width: %d\n", height, width);
     
     for (int i = 0; i < width; i++) {
       bool foundNonOne = false;
@@ -73,9 +98,9 @@ public:
             bestT = t;
           }
         }
-        double difficulty = fmin(fmax(startDiff + (endDiff - startDiff) * bestT, startDiff), endDiff);
-        double pointHeight = fmax(fmin(pow(dist * DIFFICULTY_COEFFICIENT(difficulty), 2) + getNoise(), 1), 0);
-        points[j * width + i] = pointHeight * 100;
+        double difficulty = fmin(fmax(startDifficulty + (endDifficulty - startDifficulty) * bestT, startDifficulty), endDifficulty);
+        double pointHeight = fmax(fmin(pow(dist * DIFFICULTY_COEFFICIENT(difficulty), 2), 1), 0);
+        points[j * width + i] = (pointHeight * 120) + getTerrain(j, i) * (pointHeight) + getNoise() * (1 - pointHeight);
         if (pointHeight != 1.0) {
           foundNonOne = true;
           foundFirst = true;
@@ -99,10 +124,18 @@ public:
   
   ~CanyonSegment() {
     delete[] points;
+    delete[] terrain;
   }
 
   double getNoise() {
-    return (rand() % 2000 - 1000) / 10000.0;
+    return (rand() % 2000 - 1000) / 100.0;
+  }
+  
+  double getTerrain(int y, int x) {
+    if (x >= terrainSize) {
+      x = terrainSize * 2 - x - 1;
+    }
+    return terrain[terrainSize * y + x] * 40 - 20;
   }
   
   Vector3 getPoint(int x, int y) {
@@ -221,6 +254,43 @@ public:
       glEnd();
     }
     
+    int stepSize = 2;
+    
+    for (int j = 0; j < height; j += stepSize) {
+      glBegin(GL_QUAD_STRIP);
+      for (int i = xStartOffset; i >= stepSize; i -= stepSize) {
+        bool makeRed = (i == collidedx && j == collidedy);
+        Vector3 v1 = getPoint(i, j);
+        Vector3 v2 = getPoint(i, j - stepSize);
+        Vector3 v3 = getPoint(i - stepSize, j - stepSize);
+        Vector3 normal = (v3 - v2).cross(v1 - v2);
+        normal.normalize();
+        glNormal3dv(normal.getPointer());
+        makeRed ? glColor3d(1,0,0) : setColor(v1[Y]);
+        glVertex3dv(v1.getPointer());
+        makeRed ? glColor3d(1,0,0) : setColor(v2[Y]);
+        glVertex3dv(v2.getPointer());
+      }
+      
+      glEnd();
+      
+      glBegin(GL_QUAD_STRIP);
+      for (int i = xEndOffset; i < width; i += stepSize) {
+        bool makeRed = (i == collidedx && j == collidedy);
+        Vector3 v1 = getPoint(i, j);
+        Vector3 v2 = getPoint(i, j + stepSize);
+        Vector3 v3 = getPoint(i + stepSize, j + stepSize);
+        Vector3 normal = (v3 - v2).cross(v1 - v2);
+        normal.normalize();
+        glNormal3dv(normal.getPointer());
+        makeRed ? glColor3d(1,0,0) : setColor(v1[Y]);
+        glVertex3dv(v1.getPointer());
+        makeRed ? glColor3d(1,0,0) : setColor(v2[Y]);
+        glVertex3dv(v2.getPointer());
+      }
+      glEnd();
+    }
+    
   }
   
   int getYMin() {
@@ -241,6 +311,108 @@ public:
   
   Vector3 getControlPoint(int n) {
     return controlPoints[n];
+  }
+  
+  double terrainNoise(double h, int iteration) {
+    return (rand() % 2000 - 1000) / 1000.0 * pow(pow(2, -h), iteration);
+  }
+  
+  double * createTerrain(int size, double h) {
+    terrainSize = 1;
+    while (terrainSize + 1 < size) {
+      terrainSize <<= 1;
+    }
+    terrainSize += 1;
+    printf("terrainsize: %d\n", terrainSize);
+    
+    double *terrain = new double[terrainSize * terrainSize];
+
+    int step = terrainSize / 2;
+    int iteration = 0;
+
+    for (int i = 0; i < terrainSize; i++) {
+      for (int j = 0; j < terrainSize; j++) {
+        terrain[(i) * terrainSize + (j)] = 0;
+      }
+    }
+
+    while (step != 0) {
+      // diamond step
+      for (int j = step; j < terrainSize; j += step * 2) {
+        for (int i = step; i < terrainSize; i += step * 2) {
+          terrain[(j) * terrainSize + (i)] = (terrain[(j-step) * terrainSize + (i-step)] + 
+                                      terrain[(j-step) * terrainSize + (i+step)] + 
+                                      terrain[(j+step) * terrainSize + (i-step)] + 
+                                      terrain[(j+step) * terrainSize + (i+step)]) / 4 + terrainNoise(h, iteration);
+        }
+      }
+
+      // square step a
+      for (int j = step * 2; j < terrainSize - step * 2; j += step * 2) {
+        for (int i = step; i < terrainSize; i += step * 2) {
+          if (j == 0) {
+            terrain[(j) * terrainSize + (i)] = (terrain[(j+step) * terrainSize + (i)] + 
+                                          terrain[(j) * terrainSize + (i-step)] + 
+                                          terrain[(j) * terrainSize + (i+step)]) / 3 + terrainNoise(h, iteration);
+          }
+          else if (j == terrainSize - 1) {
+            terrain[(j) * terrainSize + (i)] = (terrain[(j-step) * terrainSize + (i)] + 
+                                          terrain[(j) * terrainSize + (i-step)] + 
+                                          terrain[(j) * terrainSize + (i+step)]) / 3 + terrainNoise(h, iteration);
+          }
+          else {
+            terrain[(j) * terrainSize + (i)] = (terrain[(j-step) * terrainSize + (i)] + 
+                                          terrain[(j+step) * terrainSize + (i)] + 
+                                          terrain[(j) * terrainSize + (i-step)] + 
+                                          terrain[(j) * terrainSize + (i+step)]) / 4 + terrainNoise(h, iteration);
+          }
+        }
+      }
+      for (int j = step; j < terrainSize; j += step * 2) {
+        for (int i = 0; i < terrainSize; i += step * 2) {
+          if (i == 0) {
+            terrain[(j) * terrainSize + (i)] = (terrain[(j-step) * terrainSize + (i)] + 
+                                          terrain[(j+step) * terrainSize + (i)] + 
+                                          terrain[(j) * terrainSize + (i+step)]) / 3 + terrainNoise(h, iteration);
+          }
+          else if (i == terrainSize - 1) {
+            terrain[(j) * terrainSize + (i)] = (terrain[(j-step) * terrainSize + (i)] + 
+                                          terrain[(j+step) * terrainSize + (i)] + 
+                                          terrain[(j) * terrainSize + (i-step)]) / 3 + terrainNoise(h, iteration);
+          }
+          else {
+            terrain[(j) * terrainSize + (i)] = (terrain[(j-step) * terrainSize + (i)] + 
+                                          terrain[(j+step) * terrainSize + (i)] + 
+                                          terrain[(j) * terrainSize + (i-step)] + 
+                                          terrain[(j) * terrainSize + (i+step)]) / 4 + terrainNoise(h, iteration);
+          }
+        }
+      }
+
+
+      step /= 2;
+      iteration++;
+    }
+
+    /*double min = 100000, max = -100000;
+
+    for (int i = 0; i < size; i++) {
+      for (int j = 0; j < size; j++) {
+        min = fmin(min, terrain[(i) * size + (j)]);
+        max = fmax(max, terrain[(i) * size + (j)]);
+      }
+    }
+    
+    printf("max: %f, min: %f\n", max, min);
+
+    for (int i = 0; i < size; i++) {
+      for (int j = 0; j < size; j++) {
+        terrain[(i) * size + (j)] = (terrain[(i) * size + (j)] - min) / (max - min);
+        //printf("terrain: %f\n", terrain[i * size + j]);
+      }
+    }*/
+    
+    return terrain;
   }
 };
 #endif

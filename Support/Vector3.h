@@ -24,6 +24,7 @@ class Vector3 : public Vector4
     static Vector3 MakeVector(double[]);
     static Vector3 BezierVector(double);
     static Vector3 BezierDerivativeVector(double);
+    static Vector3 BezierSecondDerivativeVector(double);
 };
 
 #endif

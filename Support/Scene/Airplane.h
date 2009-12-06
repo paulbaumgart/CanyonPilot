@@ -42,6 +42,8 @@ class Airplane : public TransformGroup {
       
       lrTurnAccel = 0;
       lrTurnVel = 0;
+      udTurnAccel = 0;
+      udTurnVel = 0;
       direction = Vector3::MakeVector(0, 0, 1);
       position = Vector3::MakeVector(0, 50, 0);
     }
@@ -117,12 +119,14 @@ class Airplane : public TransformGroup {
                     Matrix4::RotationYMatrix(angle * 180 / M_PI + 90));
     }
     
-    virtual void orient(Vector3 position, Vector3 velocity, Vector3 acceleration) {
+    virtual void orient(Vector3& position, Vector3& velocity, Vector3& acceleration) {
       double angleXZ = atan2(-velocity[Z], velocity[X]) * 180 / M_PI + 90;
       double angleY = asin(velocity.normalize()[Y]) * 180 / M_PI;
-      printf("angleY: %f\n", angleY);
+      Vector3 orthoVel = Vector3::MakeVector(-velocity[Z], 0, velocity[X]);
+      double turnAngle = acos(orthoVel.dot(acceleration) / (orthoVel.length() * acceleration.length()));
+      //printf("turnAngle: %f\n", turnAngle);
       
-      airplane->getMatrix() = Matrix4::RotationXMatrix(-angleY);
+      airplane->getMatrix() = Matrix4::RotationYMatrix(0).multiply(Matrix4::RotationXMatrix(-angleY));
       
       getMatrix() = Matrix4::TranslationMatrix(position).multiply(Matrix4::RotationYMatrix(angleXZ));
     }
@@ -164,8 +168,10 @@ class Airplane : public TransformGroup {
     }
     
     virtual void drawObject(Matrix4& mat) {
+      Matrix4 identity;
       glColor3f(.8, .8, .8);
-      TransformGroup::drawObject(mat);
+      //TransformGroup::drawObject(mat);
+      airplane->draw(identity);
     }
   private:
     TransformGroup *leftWingTrans, *rightWingTrans, *airplane;

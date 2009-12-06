@@ -77,6 +77,10 @@ class Bezier : public Shape3d {
     Vector3 getTangent(double t) {
       return getMatrix((int) t).multiply(Matrix4::BezierMatrix()).multiply(Vector3::BezierDerivativeVector(fmod(t, 1)));
     }
+    
+    Vector3 getAcceleration(double t) {
+      return getMatrix((int) t).multiply(Matrix4::BezierMatrix()).multiply(Vector3::BezierSecondDerivativeVector(fmod(t, 1)));
+    }
 
     Vector3 getVertex(Vector3& coord, double rot) {
       return Vector3::MakeVector(sin(rot) * coord[X], coord[Y], cos(rot) * coord[X]);

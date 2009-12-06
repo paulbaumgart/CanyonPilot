@@ -47,7 +47,18 @@ void drawPoint(int x, int y, double z, float r, float g, float b)
 }
 
 double getNoise() {
-  return (rand() % 2000 - 1000) / 10000.0;
+  double noise = (rand() % 2000 - 1000) / 1000.0;
+  return noise;
+}
+
+int myMod(int a, int b) {
+  int ans = a % b;
+  return (ans < 0) ? ans + b : ans;
+}
+
+double terrainNoise(double h, int iteration) {
+  double noise = (rand() % 2000 - 1000) / 1000.0 * pow(pow(2, -h), iteration);
+  return noise;
 }
 
 void rasterize()
@@ -57,7 +68,7 @@ void rasterize()
   
   srand ( time(NULL) );
 
-  b.addPoint(rand() % 128, 0);
+  /*b.addPoint(rand() % 128, 0);
   b.addPoint(rand() % 128, 40);
   b.addPoint(rand() % 128, 80);
   b.addPoint(rand() % 128, 128);
@@ -78,6 +89,77 @@ void rasterize()
       }
       double height = fmax(fmin(pow(dist / (5 + bestT * 3), 2) + getNoise(), 1), 0);
       drawPoint(i, j, 0, height, height, height);
+    }
+  }*/
+  
+  int size = 513;
+  double h = .8;
+  
+  double terrain[size][size];
+  
+  int step = size / 2;
+  int iteration = 0;
+  
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < size; j++) {
+      terrain[i][j] = 0;
+    }
+  }
+  
+  while (step != 0) {
+    // diamond step
+    for (int j = step; j < size; j += step * 2) {
+      for (int i = step; i < size; i += step * 2) {
+        terrain[j][i] = (terrain[j-step][i-step] + terrain[j-step][i+step] + terrain[j+step][i-step] + terrain[j+step][i+step]) / 4 + terrainNoise(h, iteration);
+      }
+    }
+    
+    // square step a
+    for (int j = step * 2; j < size - step * 2; j += step * 2) {
+      for (int i = step; i < size; i += step * 2) {
+        if (j == 0) {
+          terrain[j][i] = (terrain[j+step][i] + terrain[j][i-step] + terrain[j][i+step]) / 3 + terrainNoise(h, iteration);
+        }
+        else if (j == size - 1) {
+          terrain[j][i] = (terrain[j-step][i] + terrain[j][i-step] + terrain[j][i+step]) / 3 + terrainNoise(h, iteration);
+        }
+        else {
+          terrain[j][i] = (terrain[j-step][i] + terrain[j+step][i] + terrain[j][i-step] + terrain[j][i+step]) / 4 + terrainNoise(h, iteration);
+        }
+      }
+    }
+    for (int j = step; j < size; j += step * 2) {
+      for (int i = 0; i < size; i += step * 2) {
+        if (i == 0) {
+          terrain[j][i] = (terrain[j-step][i] + terrain[j+step][i] + terrain[j][i+step]) / 3 + terrainNoise(h, iteration);
+        }
+        else if (i == size - 1) {
+          terrain[j][i] = (terrain[j-step][i] + terrain[j+step][i] + terrain[j][i-step]) / 3 + terrainNoise(h, iteration);
+        }
+        else {
+          terrain[j][i] = (terrain[j-step][i] + terrain[j+step][i] + terrain[j][i-step] + terrain[j][i+step]) / 4 + terrainNoise(h, iteration);
+        }
+      }
+    }
+    
+    
+    step /= 2;
+    iteration++;
+  }
+  
+  double min = 100000, max = -100000;
+  
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < size; j++) {
+      min = fmin(min, terrain[i][j]);
+      max = fmax(max, terrain[i][j]);
+    }
+  }
+  
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < size; j++) {
+      double val = (terrain[i][j] - min) / (max - min);
+      drawPoint(j, i, 0, val, val, val);
     }
   }
 }
