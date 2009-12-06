@@ -24,6 +24,7 @@ class Airplane : public TransformGroup {
       allocate(2);
       
       airplane = new TransformGroup(Matrix4::MakeMatrix(), 3);
+      airplane2 = new TransformGroup(Matrix4::TranslationMatrix(0, -5, -13), 1);
       leftWingTrans = new TransformGroup(Matrix4::TranslationMatrix(-5, 0, 0), 1);
       rightWingTrans = new TransformGroup(Matrix4::TranslationMatrix(5, 0, 0), 1);
       wing = new Rect(6, 1, 3);
@@ -37,8 +38,10 @@ class Airplane : public TransformGroup {
       airplane->addChild(*rightWingTrans);
       airplane->addChild(*body);
       
+      airplane2->addChild(*airplane);
+      
       addChild(*camera);
-      addChild(*airplane);
+      addChild(*airplane2);
       
       lrTurnAccel = 0;
       lrTurnVel = 0;
@@ -113,7 +116,7 @@ class Airplane : public TransformGroup {
       position = position + movement.scale(SPEED * elapsed);
       double angle = atan2(-direction[Z], direction[X]);
       
-      airplane->getMatrix() = Matrix4::RotationZMatrix(lrTurnVel).multiply(Matrix4::RotationXMatrix(-udTurnVel * 20));
+      airplane->getMatrix() = Matrix4::RotationZMatrix(-lrTurnVel).multiply(Matrix4::RotationXMatrix(udTurnVel * 20));
       
       getMatrix() = Matrix4::TranslationMatrix(position).multiply(
                     Matrix4::RotationYMatrix(angle * 180 / M_PI + 90));
@@ -126,7 +129,7 @@ class Airplane : public TransformGroup {
       double turnAngle = acos(orthoVel.dot(acceleration) / (orthoVel.length() * acceleration.length()));
       //printf("turnAngle: %f\n", turnAngle);
       
-      airplane->getMatrix() = Matrix4::RotationYMatrix(0).multiply(Matrix4::RotationXMatrix(-angleY));
+      airplane->getMatrix() = Matrix4::RotationYMatrix(0).multiply(Matrix4::RotationXMatrix(angleY));
       
       getMatrix() = Matrix4::TranslationMatrix(position).multiply(Matrix4::RotationYMatrix(angleXZ));
     }
@@ -170,11 +173,10 @@ class Airplane : public TransformGroup {
     virtual void drawObject(Matrix4& mat) {
       Matrix4 identity;
       glColor3f(.8, .8, .8);
-      //TransformGroup::drawObject(mat);
-      airplane->draw(identity);
+      airplane2->draw(identity);
     }
   private:
-    TransformGroup *leftWingTrans, *rightWingTrans, *airplane;
+    TransformGroup *leftWingTrans, *rightWingTrans, *airplane, *airplane2;
     Rect *wing, *body;
     Camera *camera;
     double lrTurnAccel, lrTurnVel, udTurnAccel, udTurnVel;

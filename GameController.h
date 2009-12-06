@@ -57,11 +57,11 @@ public:
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     
+    display->setCamera(identity);
+    
     glPushMatrix();
     display->draw(identity);
     glPopMatrix();
-    
-    display->setCamera(identity);
     
     canyon->draw();
   }
