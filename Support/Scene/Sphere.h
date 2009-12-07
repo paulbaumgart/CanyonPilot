@@ -2,7 +2,11 @@
 #define _SPHERE_H_
 
 #include "Shape3d.h"
+#ifdef __APPLE__
 #include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
+#endif
 
 class Sphere : public Shape3d {
   public:

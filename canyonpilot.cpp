@@ -1,6 +1,10 @@
 #include <iostream>
 #include <math.h>
+#ifdef __APPLE__
 #include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
+#endif
 #include "Support/Matrix4.h"
 #include "Support/Vector3.h"
 #include "Support/loadppm.h"

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <string.h>
 
 unsigned char* loadPGM(const char * filename, int& width, int& height)
 {

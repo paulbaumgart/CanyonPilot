@@ -2,7 +2,11 @@
 #define _SPOTLIGHT_H_
 
 #include "Shape3d.h"
+#ifdef __APPLE__
 #include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
+#endif
 
 class Spotlight : public Leaf {
   public:
