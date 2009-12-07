@@ -149,29 +149,48 @@ public:
   }
 
   Vector3 getHeightMapCoords(Vector3 point) {
-    return Vector3::MakeVector(round(point[X] / 4.0 - xMin), round(point[Z] / 4.0 - yMin), 0);
+    return Vector3::MakeVector(floor(point[X] / 4.0 - xMin), floor(point[Z] / 4.0 - yMin), 0);
   }
 
   bool pointOnBackSide(Vector3 point) {
+    Vector3 coords = getHeightMapCoords(point);
+    int i = coords[X], j = coords[Y];
+
+    Vector3 v1 = getPoint(i, j);
+    Vector3 v2 = getPoint(i, j + 1);
+    Vector3 v3 = getPoint(i + 1, j + 1);
+    Vector3 normal = (v3 - v2).cross(v1 - v2).normalize();
+
+    if ((point-v1).dot(normal) < 0) {
+      collidedx = i, collidedy = j;
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
+
+  bool fancyPantsPointOnBackSide(Vector3 point) {
     Vector3 coords = getHeightMapCoords(point);
     int x = coords[X];
     int y = coords[Y];
 
     for (int i = x-1; i <= x+1; i++) {
-        for (int j = y-1; j <= y+1; j++) {
-            Vector3 v1 = getPoint(i, j);
-            Vector3 v2 = getPoint(i, j + 1);
-            Vector3 v3 = getPoint(i + 1, j + 1);
-            Vector3 v4 = getPoint(i + 1, j);
-            Vector3 normal = (v3 - v2).cross(v1 - v2).normalize();
-            Vector3 quad[] = {v1, v2, v3, v4};
+      for (int j = y-1; j <= y+1; j++) {
+        Vector3 v1 = getPoint(i, j);
+        Vector3 v2 = getPoint(i, j + 1);
+        Vector3 v3 = getPoint(i + 1, j + 1);
+        Vector3 v4 = getPoint(i + 1, j);
+        Vector3 normal = (v3 - v2).cross(v1 - v2).normalize();
+        Vector3 quad[] = {v1, v2, v3, v4};
 
-            if (collisionWithQuad(point, quad, normal)) {
-                collidedx = i;
-                collidedy = j;
-                return true;
-            }
+        if (collisionWithQuad(point, quad, normal)) {
+          collidedx = i;
+          collidedy = j;
+          return true;
         }
+      }
     }
 
     return false;
@@ -195,7 +214,7 @@ public:
       glColor3d(1, 1, 1);
     }
   }
-  
+
   void draw() {
     glBegin(GL_QUAD_STRIP);
     glColor3f(.8, .8, .8);
@@ -211,7 +230,7 @@ public:
         if (isinf(v1[X]) || isinf(v3[X])) {
           continue;
         }
-        
+
         Vector3 normal = (v3 - v2).cross(v1 - v2).normalize();
         glNormal3dv(normal.getPointer());
         setColor(v1[Y]);
@@ -220,7 +239,7 @@ public:
         glVertex3dv(v2.getPointer());
       }
     }
-    
+
     glEnd();
 
     // Draw this segment
@@ -240,9 +259,9 @@ public:
       }
       glEnd();
     }
-    
+
     int stepSize = 2;
-    
+
     for (int j = 0; j < height; j += stepSize) {
       glBegin(GL_QUAD_STRIP);
       for (int i = xStartOffset; i >= stepSize; i -= stepSize) {
@@ -258,9 +277,9 @@ public:
         makeRed ? glColor3d(1,0,0) : setColor(v2[Y]);
         glVertex3dv(v2.getPointer());
       }
-      
+
       glEnd();
-      
+
       glBegin(GL_QUAD_STRIP);
       for (int i = xEndOffset; i < width; i += stepSize) {
         bool makeRed = (i == collidedx && j == collidedy);
@@ -277,9 +296,9 @@ public:
       }
       glEnd();
     }
-    
+
   }
-  
+
   int getYMin() {
     return yMin;
   }
@@ -295,15 +314,15 @@ public:
   void setPrevious(CanyonSegment* prev) {
     previous = prev;
   }
-  
+
   Vector3 getControlPoint(int n) {
     return controlPoints[n];
   }
-  
+
   double terrainNoise(double h, int iteration) {
     return (rand() % 2000 - 1000) / 1000.0 * pow(pow(2, -h), iteration);
   }
-  
+
   double * createTerrain(int size, double h) {
     terrainSize = 1;
     while (terrainSize + 1 < size) {
@@ -311,7 +330,7 @@ public:
     }
     terrainSize += 1;
     printf("terrainsize: %d\n", terrainSize);
-    
+
     double *terrain = new double[terrainSize * terrainSize];
 
     int step = terrainSize / 2;
@@ -328,9 +347,9 @@ public:
       for (int j = step; j < terrainSize; j += step * 2) {
         for (int i = step; i < terrainSize; i += step * 2) {
           terrain[(j) * terrainSize + (i)] = (terrain[(j-step) * terrainSize + (i-step)] + 
-                                      terrain[(j-step) * terrainSize + (i+step)] + 
-                                      terrain[(j+step) * terrainSize + (i-step)] + 
-                                      terrain[(j+step) * terrainSize + (i+step)]) / 4 + terrainNoise(h, iteration);
+              terrain[(j-step) * terrainSize + (i+step)] + 
+              terrain[(j+step) * terrainSize + (i-step)] + 
+              terrain[(j+step) * terrainSize + (i+step)]) / 4 + terrainNoise(h, iteration);
         }
       }
 
@@ -339,19 +358,19 @@ public:
         for (int i = step; i < terrainSize; i += step * 2) {
           if (j == 0) {
             terrain[(j) * terrainSize + (i)] = (terrain[(j+step) * terrainSize + (i)] + 
-                                          terrain[(j) * terrainSize + (i-step)] + 
-                                          terrain[(j) * terrainSize + (i+step)]) / 3 + terrainNoise(h, iteration);
+                terrain[(j) * terrainSize + (i-step)] + 
+                terrain[(j) * terrainSize + (i+step)]) / 3 + terrainNoise(h, iteration);
           }
           else if (j == terrainSize - 1) {
             terrain[(j) * terrainSize + (i)] = (terrain[(j-step) * terrainSize + (i)] + 
-                                          terrain[(j) * terrainSize + (i-step)] + 
-                                          terrain[(j) * terrainSize + (i+step)]) / 3 + terrainNoise(h, iteration);
+                terrain[(j) * terrainSize + (i-step)] + 
+                terrain[(j) * terrainSize + (i+step)]) / 3 + terrainNoise(h, iteration);
           }
           else {
             terrain[(j) * terrainSize + (i)] = (terrain[(j-step) * terrainSize + (i)] + 
-                                          terrain[(j+step) * terrainSize + (i)] + 
-                                          terrain[(j) * terrainSize + (i-step)] + 
-                                          terrain[(j) * terrainSize + (i+step)]) / 4 + terrainNoise(h, iteration);
+                terrain[(j+step) * terrainSize + (i)] + 
+                terrain[(j) * terrainSize + (i-step)] + 
+                terrain[(j) * terrainSize + (i+step)]) / 4 + terrainNoise(h, iteration);
           }
         }
       }
@@ -359,19 +378,19 @@ public:
         for (int i = 0; i < terrainSize; i += step * 2) {
           if (i == 0) {
             terrain[(j) * terrainSize + (i)] = (terrain[(j-step) * terrainSize + (i)] + 
-                                          terrain[(j+step) * terrainSize + (i)] + 
-                                          terrain[(j) * terrainSize + (i+step)]) / 3 + terrainNoise(h, iteration);
+                terrain[(j+step) * terrainSize + (i)] + 
+                terrain[(j) * terrainSize + (i+step)]) / 3 + terrainNoise(h, iteration);
           }
           else if (i == terrainSize - 1) {
             terrain[(j) * terrainSize + (i)] = (terrain[(j-step) * terrainSize + (i)] + 
-                                          terrain[(j+step) * terrainSize + (i)] + 
-                                          terrain[(j) * terrainSize + (i-step)]) / 3 + terrainNoise(h, iteration);
+                terrain[(j+step) * terrainSize + (i)] + 
+                terrain[(j) * terrainSize + (i-step)]) / 3 + terrainNoise(h, iteration);
           }
           else {
             terrain[(j) * terrainSize + (i)] = (terrain[(j-step) * terrainSize + (i)] + 
-                                          terrain[(j+step) * terrainSize + (i)] + 
-                                          terrain[(j) * terrainSize + (i-step)] + 
-                                          terrain[(j) * terrainSize + (i+step)]) / 4 + terrainNoise(h, iteration);
+                terrain[(j+step) * terrainSize + (i)] + 
+                terrain[(j) * terrainSize + (i-step)] + 
+                terrain[(j) * terrainSize + (i+step)]) / 4 + terrainNoise(h, iteration);
           }
         }
       }
@@ -383,22 +402,22 @@ public:
 
     /*double min = 100000, max = -100000;
 
-    for (int i = 0; i < size; i++) {
+      for (int i = 0; i < size; i++) {
       for (int j = 0; j < size; j++) {
-        min = fmin(min, terrain[(i) * size + (j)]);
-        max = fmax(max, terrain[(i) * size + (j)]);
+      min = fmin(min, terrain[(i) * size + (j)]);
+      max = fmax(max, terrain[(i) * size + (j)]);
       }
-    }
-    
-    printf("max: %f, min: %f\n", max, min);
+      }
 
-    for (int i = 0; i < size; i++) {
+      printf("max: %f, min: %f\n", max, min);
+
+      for (int i = 0; i < size; i++) {
       for (int j = 0; j < size; j++) {
-        terrain[(i) * size + (j)] = (terrain[(i) * size + (j)] - min) / (max - min);
-        //printf("terrain: %f\n", terrain[i * size + j]);
-      }
+      terrain[(i) * size + (j)] = (terrain[(i) * size + (j)] - min) / (max - min);
+    //printf("terrain: %f\n", terrain[i * size + j]);
+    }
     }*/
-    
+
     return terrain;
   }
 };
