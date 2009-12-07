@@ -46,7 +46,9 @@ public:
   }
 
   bool collisionWithPoint(Vector3 point) {
-    return children[currentSegment]->pointOnBackSide(point);
+    // Need to test the current or the next segment?
+    int index = point[Z] > getYMin()*4 ? middleSegment : currentSegment; 
+    return children[index]->pointOnBackSide(point);
   }
 
 private:

@@ -149,7 +149,7 @@ public:
   }
 
   Vector3 getHeightMapCoords(Vector3 point) {
-    return Vector3::MakeVector(floor(point[X] / 4.0 - xMin), floor(point[Z] / 4.0 - yMin), 0);
+    return Vector3::MakeVector(round(point[X] / 4.0 - xMin), round(point[Z] / 4.0 - yMin), 0);
   }
 
   bool pointOnBackSide(Vector3 point) {
