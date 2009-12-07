@@ -16,7 +16,7 @@ class Rect : public Shape3d {
     }
     
     virtual void drawObject(Matrix4& mat) {
-      glLoadMatrixd(mat.getPointer());
+      glMultMatrixd(mat.getPointer());
       
       glBegin(GL_QUADS);
       

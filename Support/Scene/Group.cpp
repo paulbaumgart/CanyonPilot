@@ -34,9 +34,11 @@ void Group::addChild(Node& child) {
 }
 
 void Group::drawObject(Matrix4& mat) {
+  glPushMatrix();
   for (int i = 0; i < numChildren; i++) {
     children[i]->draw(mat);
   }
+  glPopMatrix();
 }
 
 void Group::setCamera(Matrix4& mat) {

@@ -4,6 +4,7 @@
 #include "../Matrix4.h"
 #include "../Vector3.h"
 #include "Frustum.h"
+#include <GLUT/glut.h>
 
 //extern Frustum frustum;
 //extern bool culling;

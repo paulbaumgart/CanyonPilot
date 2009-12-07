@@ -22,9 +22,11 @@ Matrix4& TransformGroup::getMatrix() {
 void TransformGroup::drawObject(Matrix4& mat) {
   Matrix4 newMatrix = mat.multiply(this->transform);
 
+  glPushMatrix();
   for (int i = 0; i < numChildren; i++) {
     children[i]->draw(newMatrix);
   }
+  glPopMatrix();
 }
 
 void TransformGroup::setCamera(Matrix4& mat) {
