@@ -4,6 +4,7 @@
 #include <iostream>
 #include <limits>
 #include "Bezier.h"
+#include "../../Util.h"
 using namespace std;
 
 
@@ -148,7 +149,7 @@ public:
   }
 
   Vector3 getHeightMapCoords(Vector3 point) {
-    return Vector3::MakeVector(round(point[X] / 4.0 - xMin), round(point[Z] / 4.0 - yMin), 0);
+    return Vector3::MakeVector(floor(point[X] / 4.0 - xMin), floor(point[Z] / 4.0 - yMin), 0);
   }
 
   bool pointOnBackSide(Vector3 point) {
@@ -156,36 +157,24 @@ public:
     int x = coords[X];
     int y = coords[Y];
 
-    double maxProj = -1e10;
+    for (int i = x-1; i <= x+1; i++) {
+        for (int j = y-1; j <= y+1; j++) {
+            Vector3 v1 = getPoint(i, j);
+            Vector3 v2 = getPoint(i, j + 1);
+            Vector3 v3 = getPoint(i + 1, j + 1);
+            Vector3 v4 = getPoint(i + 1, j);
+            Vector3 normal = (v3 - v2).cross(v1 - v2).normalize();
+            Vector3 quad[] = {v1, v2, v3, v4};
 
-    bool retval = false;
-
-    for (int j = y; j < y + 3; j++) {
-        int i = x;
-        Vector3 v1 = getPoint(i, j);
-        Vector3 v2 = getPoint(i, j + 1);
-        Vector3 v3 = getPoint(i + 1, j + 1);
-        Vector3 v4 = getPoint(i + 1, j);
-        Vector3 normal = (v3 - v2).cross(v1 - v2);
-        normal.normalize();
-
-        Vector3 w = point - v1;
-
-        if (isinf(normal[X]))
-          continue;
-
-        double proj = normal.dot(w);
-
-        if (proj < 0 && (v1[Y] > point[Y] || v2[Y] > point[Y] || v3[Y] > point[Y] || v4[Y] > point[Y])) {
-          if (proj > maxProj) {
-            collidedx = i;
-            collidedy = j;
-            maxProj = proj;
-          }
-          retval = true;
+            if (collisionWithQuad(point, quad, normal)) {
+                collidedx = i;
+                collidedy = j;
+                return true;
+            }
         }
     }
-    return retval;
+
+    return false;
   }
 
 
@@ -223,8 +212,7 @@ public:
           continue;
         }
         
-        Vector3 normal = (v3 - v2).cross(v1 - v2);
-        normal.normalize();
+        Vector3 normal = (v3 - v2).cross(v1 - v2).normalize();
         glNormal3dv(normal.getPointer());
         setColor(v1[Y]);
         glVertex3dv(v1.getPointer());
@@ -243,8 +231,7 @@ public:
         Vector3 v1 = getPoint(i, j);
         Vector3 v2 = getPoint(i, j + 1);
         Vector3 v3 = getPoint(i + 1, j + 1);
-        Vector3 normal = (v3 - v2).cross(v1 - v2);
-        normal.normalize();
+        Vector3 normal = (v3 - v2).cross(v1 - v2).normalize();
         glNormal3dv(normal.getPointer());
         makeRed ? glColor3d(1,0,0) : setColor(v1[Y]);
         glVertex3dv(v1.getPointer());
