@@ -42,4 +42,50 @@ bool collisionWithQuad (Vector3 point, Vector3 quad[], Vector3 normal) {
     return collisionWithTriangle(point, triangles[0], normal) || collisionWithTriangle(point, triangles[1], normal);
 }
 
+void setOrthographicProjection() {
+
+  // switch to projection mode
+  glMatrixMode(GL_PROJECTION);
+  // save previous matrix which contains the 
+  //settings for the perspective projection
+  glPushMatrix();
+  // reset matrix
+  glLoadIdentity();
+  // set a 2D orthographic projection
+  gluOrtho2D(0, 512, 0, 512);
+  // invert the y axis, down is positive
+  glScalef(1, -1, 1);
+  // mover the origin from the bottom left corner
+  // to the upper left corner
+  glTranslatef(0, -512, 0);
+  glMatrixMode(GL_MODELVIEW);
+}
+
+void resetPerspectiveProjection() {
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+  glMatrixMode(GL_MODELVIEW);
+}
+
+void renderBitmapString(float x, float y, char *string)
+{
+  char *c;
+  glDisable(GL_LIGHTING);
+  glRasterPos2f(x, y);
+  for (c=string; *c != '\0'; c++) {
+    glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *c);
+  }
+  glEnable(GL_LIGHTING);
+}
+
+void drawText(int x, int y, char* s) {
+  glPushMatrix();
+  glColor3f(0.0f,1.0f,1.0f);
+  setOrthographicProjection();
+  glLoadIdentity();
+  renderBitmapString(x, y, s);
+  resetPerspectiveProjection();
+  glPopMatrix();
+}
+
 #endif
