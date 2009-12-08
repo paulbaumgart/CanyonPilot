@@ -10,6 +10,7 @@ using namespace std;
 
 #define BEZIER_POINTS 50
 #define DIFFICULTY_COEFFICIENT(d) (sqrt((d) + 2.0) / 40)
+#define TOP_OF_CANYON 100
 
 class CanyonSegment : public Node {
 
@@ -101,7 +102,7 @@ public:
         }
         double difficulty = fmin(fmax(startDifficulty + (endDifficulty - startDifficulty) * bestT, startDifficulty), endDifficulty);
         double pointHeight = fmax(fmin(pow(dist * DIFFICULTY_COEFFICIENT(difficulty), 2), 1), 0);
-        points[j * width + i] = (pointHeight * 120) + getTerrain(j, i) * (pointHeight) + getNoise() * (1 - pointHeight);
+        points[j * width + i] = (pointHeight * TOP_OF_CANYON) + getTerrain(j, i) * (pointHeight) + getNoise() * (1 - pointHeight);
         if (pointHeight != 1.0) {
           foundNonOne = true;
           foundFirst = true;
@@ -133,10 +134,11 @@ public:
   }
   
   double getTerrain(int y, int x) {
-    if (x >= terrainSize) {
-      x = terrainSize * 2 - x - 1;
-    }
-    return terrain[terrainSize * y + x] * 40 - 20;
+    int absX = abs(x);
+    int reflectedX = (absX / terrainSize) % 2 == 0 ? absX % terrainSize : terrainSize - (absX % terrainSize) - 1;
+    printf("x: %d, y: %d\n", reflectedX, y);
+    
+    return terrain[terrainSize * y + reflectedX] * 40;
   }
   
   Vector3 getPoint(int x, int y) {
@@ -146,6 +148,10 @@ public:
     else {
       return Vector3::MakeVector(numeric_limits<double>::infinity(),numeric_limits<double>::infinity(),numeric_limits<double>::infinity());
     }
+  }
+  
+  Vector3 getTerrainPoint(int x, int y) {
+    return Vector3::MakeVector((x + xMin) * 4, TOP_OF_CANYON + getTerrain(y, x), (y + yMin) * 4);
   }
 
   Vector3 getHeightMapCoords(Vector3 point) {
@@ -261,10 +267,12 @@ public:
     }
 
     int stepSize = 2;
+    int bigStepSize = 4;
+    int i;
 
     for (int j = 0; j < height; j += stepSize) {
       glBegin(GL_QUAD_STRIP);
-      for (int i = xStartOffset; i >= stepSize; i -= stepSize) {
+      for (i = xStartOffset; i >= stepSize; i -= stepSize) {
         bool makeRed = (i == collidedx && j == collidedy);
         Vector3 v1 = getPoint(i, j);
         Vector3 v2 = getPoint(i, j - stepSize);
@@ -277,7 +285,22 @@ public:
         makeRed ? glColor3d(1,0,0) : setColor(v2[Y]);
         glVertex3dv(v2.getPointer());
       }
-
+      glEnd();
+      
+      glBegin(GL_QUAD_STRIP);
+      for (i += stepSize; i >= -100; i -= bigStepSize) {
+        bool makeRed = (i == collidedx && j == collidedy);
+        Vector3 v1 = getTerrainPoint(i, j);
+        Vector3 v2 = getTerrainPoint(i, j - bigStepSize);
+        Vector3 v3 = getTerrainPoint(i - bigStepSize, j - bigStepSize);
+        Vector3 normal = (v3 - v2).cross(v1 - v2);
+        normal.normalize();
+        glNormal3dv(normal.getPointer());
+        makeRed ? glColor3d(1,0,0) : setColor(v1[Y]);
+        glVertex3dv(v1.getPointer());
+        makeRed ? glColor3d(1,0,0) : setColor(v2[Y]);
+        glVertex3dv(v2.getPointer());
+      }
       glEnd();
 
       glBegin(GL_QUAD_STRIP);
@@ -399,24 +422,6 @@ public:
       step /= 2;
       iteration++;
     }
-
-    /*double min = 100000, max = -100000;
-
-      for (int i = 0; i < size; i++) {
-      for (int j = 0; j < size; j++) {
-      min = fmin(min, terrain[(i) * size + (j)]);
-      max = fmax(max, terrain[(i) * size + (j)]);
-      }
-      }
-
-      printf("max: %f, min: %f\n", max, min);
-
-      for (int i = 0; i < size; i++) {
-      for (int j = 0; j < size; j++) {
-      terrain[(i) * size + (j)] = (terrain[(i) * size + (j)] - min) / (max - min);
-    //printf("terrain: %f\n", terrain[i * size + j]);
-    }
-    }*/
 
     return terrain;
   }
