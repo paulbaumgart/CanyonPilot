@@ -134,9 +134,9 @@ public:
   }
   
   double getTerrain(int y, int x) {
+    // Reflects the x point such that f(-5) == f(5) and f(105) == f(95) if terrainSize == 100
     int absX = abs(x);
     int reflectedX = (absX / terrainSize) % 2 == 0 ? absX % terrainSize : terrainSize - (absX % terrainSize) - 1;
-    printf("x: %d, y: %d\n", reflectedX, y);
     
     return terrain[terrainSize * y + reflectedX] * 40;
   }
@@ -151,6 +151,7 @@ public:
   }
   
   Vector3 getTerrainPoint(int x, int y) {
+    y = min(max(y, 0), height - 1);
     return Vector3::MakeVector((x + xMin) * 4, TOP_OF_CANYON + getTerrain(y, x), (y + yMin) * 4);
   }
 
@@ -304,7 +305,7 @@ public:
       glEnd();
 
       glBegin(GL_QUAD_STRIP);
-      for (int i = xEndOffset; i < width; i += stepSize) {
+      for (i = xEndOffset; i < width; i += stepSize) {
         bool makeRed = (i == collidedx && j == collidedy);
         Vector3 v1 = getPoint(i, j);
         Vector3 v2 = getPoint(i, j + stepSize);
@@ -318,8 +319,23 @@ public:
         glVertex3dv(v2.getPointer());
       }
       glEnd();
-    }
-
+      
+      glBegin(GL_QUAD_STRIP);
+      for (i -= stepSize; i < width + 100; i += bigStepSize) {
+        bool makeRed = (i == collidedx && j == collidedy);
+        Vector3 v1 = getTerrainPoint(i, j);
+        Vector3 v2 = getTerrainPoint(i, j + bigStepSize);
+        Vector3 v3 = getTerrainPoint(i + bigStepSize, j + bigStepSize);
+        Vector3 normal = (v3 - v2).cross(v1 - v2);
+        normal.normalize();
+        glNormal3dv(normal.getPointer());
+        makeRed ? glColor3d(1,0,0) : setColor(v1[Y]);
+        glVertex3dv(v1.getPointer());
+        makeRed ? glColor3d(1,0,0) : setColor(v2[Y]);
+        glVertex3dv(v2.getPointer());
+      }
+      glEnd();
+    }    
   }
 
   int getYMin() {
