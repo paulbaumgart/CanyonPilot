@@ -27,7 +27,7 @@ int height = 512;   // set window height in pixels here
 
 void togglePaused();
 
-double lastTime;
+double lastTime, fps;
 Canyon *canyon;
 
 bool paused = false;
@@ -56,22 +56,17 @@ void loadData() {
   activeController = &cutsceneController;
   
   lastTime = getMicroTime();
+  fps = 0;
 }
 
 void step() {
   double t = getMicroTime();
-  static int counter = 0;
-  if (counter <= 0) {
-    fprintf(stderr, "Framerate: %.2f              \r", 1 / (t - lastTime));
-    counter = 20;
-  }
-  else {
-    counter--;
-  }
-  
+
   if (paused) {
     return;
   }
+
+  fps = 1 / (t - lastTime);
   
   if (activeController == &cutsceneController && cutsceneController.isDone()) {
     activeController = &gameController;
@@ -87,6 +82,8 @@ void step() {
 // when glutPostRedisplay() was called.
 void displayCallback(void)
 {  
+  double t = getMicroTime();
+
   pthread_mutex_lock(&drawMutex);
 
   Matrix4 identity;
@@ -104,6 +101,10 @@ void displayCallback(void)
   step();
 
   activeController->draw();
+
+  char s[10];
+  snprintf(s, 10, "FPS: %0.2f", fps);
+  drawText(420, 502, s);
 
   glFlush();
   glutSwapBuffers();
