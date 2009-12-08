@@ -305,7 +305,7 @@ public:
       glEnd();
 
       glBegin(GL_QUAD_STRIP);
-      for (i = xEndOffset; i < width; i += stepSize) {
+      for (i = xEndOffset; i < width - stepSize; i += stepSize) {
         bool makeRed = (i == collidedx && j == collidedy);
         Vector3 v1 = getPoint(i, j);
         Vector3 v2 = getPoint(i, j + stepSize);
