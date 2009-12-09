@@ -16,6 +16,7 @@ class CanyonSegment : public Node {
 
 private:
   double *points, *terrain;
+  double *heights;
   int width, height, xMin, yMin, startDifficulty, endDifficulty, xStartOffset, xEndOffset;
   Vector3 controlPoints[4];
   CanyonSegment* previous;
@@ -77,6 +78,11 @@ public:
     b.addPoint(controlPoints[3][X] - xMin, controlPoints[3][Y] - yMin);
 
     points = new double[width * height];
+    heights = new double[height];
+    
+    for (int i = 0; i < height; i++) {
+      heights[i] = 0;
+    }
 
     Matrix4 multiplierMatrix = b.getMatrix(0).multiply(Matrix4::BezierMatrix());
     double stepAmount = 1.0 / BEZIER_POINTS;
@@ -103,6 +109,7 @@ public:
         double difficulty = fmin(fmax(startDifficulty + (endDifficulty - startDifficulty) * bestT, startDifficulty), endDifficulty);
         double pointHeight = fmax(fmin(pow(dist * DIFFICULTY_COEFFICIENT(difficulty), 2), 1), 0);
         points[j * width + i] = (pointHeight * TOP_OF_CANYON) + getTerrain(j, i) * (pointHeight) + getNoise() * (1 - pointHeight);
+        heights[j] = max(heights[j], points[j * width + i]);
         if (pointHeight != 1.0) {
           foundNonOne = true;
           foundFirst = true;
@@ -127,6 +134,7 @@ public:
   ~CanyonSegment() {
     delete[] points;
     delete[] terrain;
+    delete[] heights;
   }
 
   double getNoise() {
@@ -176,7 +184,13 @@ public:
       return false;
     }
   }
-
+  
+  bool aboveCanyon(Vector3 point) {
+    Vector3 coords = getHeightMapCoords(point);
+    int index = coords[Y];
+    
+    return point[Y] > heights[index];
+  }
 
   bool fancyPantsPointOnBackSide(Vector3 point) {
     Vector3 coords = getHeightMapCoords(point);

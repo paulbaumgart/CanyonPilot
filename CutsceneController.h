@@ -14,6 +14,7 @@
 
 extern void togglePaused();
 extern Canyon *canyon;
+extern Skybox *skybox;
 
 class CutsceneController : public Controller {
 public:
@@ -24,9 +25,9 @@ public:
     
     track->addPoint(450, 200, -200);
     track->addPoint(280, 200, -200);
-    track->addPoint(210, 250, -340);
-    track->addPoint(120, 300, -380);
-    track->addPoint(30, 350, -420);
+    track->addPoint(210, 300, -340);
+    track->addPoint(150, 300, -380); //
+    track->addPoint(90, 300, -420);
     track->addPoint(0, 50, -260);
     track->addPoint(0, 50, 0);
     
@@ -62,7 +63,7 @@ public:
   virtual void keyUpHandler(int key) {}
   
   bool isDone() {
-    return track->getT() >= 1.98;
+    return track->getT() >= 2 - 1e-9;
   }
 private:
   Airplane *airplane;
