@@ -62,7 +62,7 @@ public:
   virtual void keyUpHandler(int key) {}
   
   bool isDone() {
-    return track->getT() >= 1.999;
+    return track->getT() >= 1.98;
   }
 private:
   Airplane *airplane;
