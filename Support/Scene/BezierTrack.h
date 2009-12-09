@@ -7,7 +7,7 @@
 class BezierTrack : public Group {
   public:
     BezierTrack() {
-      bezier = new Bezier();
+      bezier = new Bezier(3);
       t = 0;
     }
     

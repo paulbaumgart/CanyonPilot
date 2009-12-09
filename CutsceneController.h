@@ -20,25 +20,43 @@ class CutsceneController : public Controller {
 public:
   virtual void initialize() {
     track = new BezierTrack();
+    badTrack = new BezierTrack();
     airplane = new Airplane();
-    display = new TransformGroup(Matrix4::TranslationMatrix(0, 0, 0), 1);
+    badPlane = new Airplane();
+    display = new TransformGroup(Matrix4::TranslationMatrix(0, 0, 0), 2);
     
-    track->addPoint(450, 200, -200);
-    track->addPoint(280, 200, -200);
+    track->addPoint(600, 190, -190);
+    track->addPoint(500, 200, -210);
+    track->addPoint(420, 210, -190);
+    track->addPoint(350, 200, -200); //
+    track->addPoint(280, 190, -210);
     track->addPoint(210, 300, -340);
     track->addPoint(150, 300, -380); //
     track->addPoint(90, 300, -420);
     track->addPoint(0, 50, -260);
     track->addPoint(0, 50, 0);
     
+    badTrack->addPoint(650, 190, -190);
+    badTrack->addPoint(550, 200, -210);
+    badTrack->addPoint(470, 210, -190);
+    badTrack->addPoint(400, 200, -200); //
+    badTrack->addPoint(330, 190, -210);
+    badTrack->addPoint(260, 300, -340);
+    badTrack->addPoint(130, 320, -350); //
+    badTrack->addPoint(0, 340, -360);
+    badTrack->addPoint(-100, 350, -370);
+    badTrack->addPoint(-150, 360, -380);
+    
     track->addChild(*airplane);
+    badTrack->addChild(*badPlane);
     
     display->addChild(*track);
+    display->addChild(*badTrack);
   }
   
   virtual void step(double elapsed) {
     track->step(elapsed * STEP_SIZE);
-    //track->step(.01);
+    badTrack->step(elapsed * STEP_SIZE);
   }
   
   virtual void draw() {
@@ -70,7 +88,7 @@ public:
       skybox->draw(airplane->getDirection());
     }
     else if (view == 2) {
-      skybox->draw(camera - position);
+      skybox->draw(position - camera);
     }
   }
   
@@ -78,11 +96,11 @@ public:
   virtual void keyUpHandler(int key) {}
   
   bool isDone() {
-    return track->getT() >= 2 - 1e-9;
+    return track->getT() >= 3 - 1e-9;
   }
 private:
-  Airplane *airplane;
-  BezierTrack *track;
+  Airplane *airplane, *badPlane;
+  BezierTrack *track, *badTrack;
   TransformGroup* display;
 };
 
