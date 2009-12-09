@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
   glEnable(GL_FOG);
 
   glCullFace(GL_BACK);
-  glEnable(GL_CULL_FACE);
+  //glEnable(GL_CULL_FACE);
   glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
   glEnable(GL_COLOR_MATERIAL);
   
