@@ -48,12 +48,12 @@ void reshapeCallback(int w, int h)
   glViewport(0, 0, w, h);  // set new viewport size
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glFrustum(-10.0, 10.0, -10.0, 10.0, 10, 3000.0); // set perspective projection viewing frustum
+  glFrustum(-10.0, 10.0, -10.0, 10.0, 10, 10000.0); // set perspective projection viewing frustum
 }
 
 void loadData() {
   canyon = Canyon::getCanyon();
-  skybox = new Skybox(2000);
+  skybox = new Skybox(10000);
   gameController.initialize();
   cutsceneController.initialize();
   

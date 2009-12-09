@@ -120,7 +120,6 @@ class Airplane : public TransformGroup {
       double angleY = asin(velocity.normalize()[Y]) * 180 / M_PI;
       Vector3 orthoVel = Vector3::MakeVector(-velocity[Z], 0, velocity[X]);
       double turnAngle = acos(orthoVel.dot(acceleration) / (orthoVel.length() * acceleration.length())) * 180 / M_PI - 90;
-      printf("turnAngle: %f\n", turnAngle);
       
       airplane->getMatrix() = Matrix4::RotationZMatrix(-turnAngle).multiply(Matrix4::RotationXMatrix(-angleY));
       
