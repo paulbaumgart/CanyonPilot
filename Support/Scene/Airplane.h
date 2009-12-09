@@ -5,6 +5,7 @@
 #include "Rect.h"
 #include "Camera.h"
 #include "BezierTrack.h"
+#include "Object3d.h"
 #include <math.h>
 
 #define LEFT -1
@@ -23,19 +24,12 @@ class Airplane : public TransformGroup {
     Airplane() {
       allocate(2);
       
-      airplane = new TransformGroup(Matrix4::MakeMatrix(), 3);
-      leftWingTrans = new TransformGroup(Matrix4::TranslationMatrix(-5, 0, 0), 1);
-      rightWingTrans = new TransformGroup(Matrix4::TranslationMatrix(5, 0, 0), 1);
-      wing = new Rect(6, 1, 3);
-      body = new Rect(4, 3, 5);
-      camera = new Camera(Vector3::MakeVector(0, 10, -12), Vector3::MakeVector(0, 5.0, 1), Vector3::MakeVector(0, 1, 0));
+      airplane = new TransformGroup(Matrix4::MakeMatrix(), 1);
+      camera = new Camera(Vector3::MakeVector(0, 10, -18), Vector3::MakeVector(0, 5.0, 1), Vector3::MakeVector(0, 1, 0));
+      planeObject = new Object3d("Objects/f22.obj");
+      planeObject->scale(20);
       
-      leftWingTrans->addChild(*wing);
-      rightWingTrans->addChild(*wing);
-      
-      airplane->addChild(*leftWingTrans);
-      airplane->addChild(*rightWingTrans);
-      airplane->addChild(*body);
+      airplane->addChild(*planeObject);
       
       addChild(*camera);
       addChild(*airplane);
@@ -49,10 +43,7 @@ class Airplane : public TransformGroup {
     }
     
     ~Airplane() {
-      delete leftWingTrans;
-      delete rightWingTrans;
-      delete wing;
-      delete body;
+      delete planeObject;
     }
     
     void step(double elapsed) {
@@ -182,8 +173,8 @@ class Airplane : public TransformGroup {
       TransformGroup::drawObject(mat);
     }
   private:
-    TransformGroup *leftWingTrans, *rightWingTrans, *airplane;
-    Rect *wing, *body;
+    TransformGroup *airplane;
+    Object3d *planeObject;
     Camera *camera;
     double lrTurnAccel, lrTurnVel, udTurnAccel, udTurnVel;
     Vector3 direction;
