@@ -62,7 +62,7 @@ public:
   }
   
   void initialize() {  
-    int fudgeFactor = 2*(1.0 / DIFFICULTY_COEFFICIENT(min(startDifficulty, endDifficulty))) + 5;
+    int fudgeFactor = 2*(1.0 / DIFFICULTY_COEFFICIENT(min(startDifficulty, endDifficulty))) + 10;
     printf("Fudge: %d\n", fudgeFactor);
     this->xMin = fmin(controlPoints[0][X], fmin(controlPoints[1][X], fmin(controlPoints[2][X], controlPoints[3][X]))) - fudgeFactor;
     int xMax = fmax(controlPoints[0][X], fmax(controlPoints[1][X], fmax(controlPoints[2][X], controlPoints[3][X]))) + fudgeFactor;
@@ -91,8 +91,6 @@ public:
 
     bool foundFirst = false;
     
-    printf("height: %d, width: %d\n", height, width);
-    
     for (int i = 0; i < width; i++) {
       bool foundNonOne = false;
       for (int j = 0; j < height; j++) {
@@ -117,7 +115,7 @@ public:
       }
       if (!foundNonOne) {
         if (foundFirst) {
-          if (abs(xStartOffset - i) > 5) {
+          if (abs(xStartOffset - i) > 10) {
             xEndOffset = min(xEndOffset, i);
           }
         }
@@ -127,8 +125,8 @@ public:
       }
     }
     
-    xStartOffset = max(xStartOffset - 5, 0);
-    xEndOffset = min(xEndOffset + 5, width);
+    xStartOffset = max(xStartOffset - 10, 0);
+    xEndOffset = min(xEndOffset + 10, width);
   }
   
   ~CanyonSegment() {

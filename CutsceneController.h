@@ -44,10 +44,19 @@ public:
   virtual void draw() {
     Matrix4 identity;
     
+    int view = (track->getT() < 1 && false) ? 1 : 2;
+    Vector3 position = airplane->getPosition();
+    Vector3 camera = Vector3::MakeVector(250, 250, -320);
+    
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     
-    display->setCamera(identity);
+    if (view == 1) {
+      display->setCamera(identity);
+    }
+    else if (view == 2) {
+      gluLookAt(camera[X], camera[Y], camera[Z], position[X], position[Y], position[Z], 0, 1, 0);
+    }
     
     glPushMatrix();
     display->draw(identity);
@@ -56,7 +65,13 @@ public:
     canyon->draw();
     
     glLoadIdentity();
-    skybox->draw(airplane->getDirection());
+    
+    if (view == 1) {
+      skybox->draw(airplane->getDirection());
+    }
+    else if (view == 2) {
+      skybox->draw(camera - position);
+    }
   }
   
   virtual void keyDownHandler(int key) {}
