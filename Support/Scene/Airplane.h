@@ -161,6 +161,14 @@ class Airplane : public TransformGroup {
     Vector3 getPosition() {
       return position;
     }
+    
+    Vector3 getDirection() {
+      return direction;
+    }
+    
+    double getAngle() {
+      return atan2(direction[Z], direction[X]);
+    }
 
     Vector3 getWingTip(bool right=true) {
       return getMatrix().multiply(airplane->getMatrix()).multiply(Vector3::MakeVector(right ? -8 : 8, 0, -1.5));

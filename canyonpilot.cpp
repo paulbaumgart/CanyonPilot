@@ -27,6 +27,7 @@ int height = 512;   // set window height in pixels here
 
 void togglePaused();
 
+int textureCount = 1;
 double lastTime, fps;
 Canyon *canyon;
 
@@ -174,7 +175,6 @@ int main(int argc, char *argv[])
   glFogf(GL_FOG_END, 500.0f);
   glEnable(GL_FOG);
 
-  glEnable(GL_NORMALIZE);
   glCullFace(GL_BACK);
   glEnable(GL_CULL_FACE);
   glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);

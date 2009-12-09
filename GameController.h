@@ -6,6 +6,7 @@
 #include "Support/Scene/TransformGroup.h"
 #include "Support/Scene/Airplane.h"
 #include "Support/Scene/Canyon.h"
+#include "Support/Scene/Skybox.h"
 #include "Controller.h"
 #include "Util.h"
 
@@ -22,6 +23,7 @@ public:
     airplane = new Airplane();
 
     Vector3 p0 = canyon->getFirstPosition();
+    skybox = new Skybox(1150);
     //airplane->setPosition(Vector3::MakeVector(p0[X], 50, p0[Z]));
     
     display->addChild(*airplane);
@@ -64,6 +66,9 @@ public:
     glPopMatrix();
     
     canyon->draw();
+    
+    glLoadIdentity();
+    skybox->draw(airplane->getDirection());
   }
   
   virtual void keyDownHandler(int key) {
@@ -103,6 +108,7 @@ private:
   //Canyon* canyon;
   Airplane* airplane;
   TransformGroup* display;
+  Skybox* skybox;
   int speed, timeout;
 };
 
