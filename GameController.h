@@ -12,6 +12,7 @@
 
 extern void togglePaused();
 extern Canyon *canyon;
+extern Skybox *skybox;
 
 class GameController : public Controller {
 public:
@@ -23,8 +24,6 @@ public:
     airplane = new Airplane();
 
     Vector3 p0 = canyon->getFirstPosition();
-    skybox = new Skybox(1600);
-    //airplane->setPosition(Vector3::MakeVector(p0[X], 50, p0[Z]));
     
     display->addChild(*airplane);
   }
@@ -105,10 +104,8 @@ public:
   }
   
 private:
-  //Canyon* canyon;
   Airplane* airplane;
   TransformGroup* display;
-  Skybox* skybox;
   int speed, timeout;
 };
 

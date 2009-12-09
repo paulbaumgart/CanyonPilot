@@ -13,6 +13,7 @@
 #include "Support/Scene/Airplane.h"
 #include "Support/Scene/CanyonSegment.h"
 #include "Support/Scene/Canyon.h"
+#include "Support/Scene/Skybox.h"
 #include "GameController.h"
 #include "CutsceneController.h"
 #include "Controller.h"
@@ -30,6 +31,7 @@ void togglePaused();
 int textureCount = 1;
 double lastTime, fps;
 Canyon *canyon;
+Skybox *skybox;
 
 bool paused = false;
 
@@ -46,16 +48,16 @@ void reshapeCallback(int w, int h)
   glViewport(0, 0, w, h);  // set new viewport size
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glFrustum(-10.0, 10.0, -10.0, 10.0, 10, 2000.0); // set perspective projection viewing frustum
+  glFrustum(-10.0, 10.0, -10.0, 10.0, 10, 3000.0); // set perspective projection viewing frustum
 }
 
 void loadData() {
   canyon = Canyon::getCanyon();
+  skybox = new Skybox(2000);
   gameController.initialize();
   cutsceneController.initialize();
   
   activeController = &cutsceneController;
-  activeController = &gameController;
   
   lastTime = getMicroTime();
   fps = 0;

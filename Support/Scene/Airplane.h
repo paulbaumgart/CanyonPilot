@@ -120,6 +120,8 @@ class Airplane : public TransformGroup {
     }
     
     virtual void orient(Vector3& position, Vector3& velocity, Vector3& acceleration) {
+      direction = velocity;
+      
       double angleXZ = atan2(-velocity[Z], velocity[X]) * 180 / M_PI + 90;
       double angleY = asin(velocity.normalize()[Y]) * 180 / M_PI;
       Vector3 orthoVel = Vector3::MakeVector(-velocity[Z], 0, velocity[X]);

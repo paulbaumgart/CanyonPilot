@@ -121,6 +121,7 @@ public:
   
   void draw(Vector3 velocity) {
     glRotated(atan2(velocity[Z], velocity[X]) * 180 / M_PI, 0, 1, 0);
+    glTranslated(0, size/6, 0);
     
     glPushAttrib(GL_ENABLE_BIT);
     glEnable(GL_TEXTURE_2D);

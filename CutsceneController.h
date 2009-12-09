@@ -6,6 +6,7 @@
 #include "Support/Scene/TransformGroup.h"
 #include "Support/Scene/Airplane.h"
 #include "Support/Scene/Canyon.h"
+#include "Support/Scene/Skybox.h"
 #include "Controller.h"
 #include "Util.h"
 
@@ -52,6 +53,9 @@ public:
     glPopMatrix();
     
     canyon->draw();
+    
+    glLoadIdentity();
+    skybox->draw(airplane->getDirection());
   }
   
   virtual void keyDownHandler(int key) {}
