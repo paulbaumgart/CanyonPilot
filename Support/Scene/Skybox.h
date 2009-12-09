@@ -128,32 +128,54 @@ public:
     glDisable(GL_BLEND);
     glDisable(GL_FOG);
     
+    glBindTexture(GL_TEXTURE_2D, downTid);
     glBegin(GL_QUADS);
     
-    glBindTexture(GL_TEXTURE_2D, downTid);
     glNormal3d(0, 1, 0);
-    glTexCoord2f(1.0, 1.0);
+    glTexCoord2f(0.0, 0.0);
     glVertex3d( size/2, -size/2,  size/2);
     glTexCoord2f(1.0, 0.0);
     glVertex3d( size/2, -size/2, -size/2);
-    glTexCoord2f(0.0, 0.0);
+    glTexCoord2f(1.0, 1.0);
     glVertex3d(-size/2, -size/2, -size/2);
     glTexCoord2f(0.0, 1.0);
     glVertex3d(-size/2, -size/2,  size/2);
     
+    glEnd();
+    
+    glBindTexture(GL_TEXTURE_2D, upTid);
+    glBegin(GL_QUADS);
+    
     glNormal3d(0, -1, 0);
+    glTexCoord2f(1.0, 1.0);
     glVertex3d( size/2,  size/2, -size/2);
+    glTexCoord2f(0.0, 1.0);
     glVertex3d( size/2,  size/2,  size/2);
+    glTexCoord2f(0.0, 0.0);
     glVertex3d(-size/2,  size/2,  size/2);
+    glTexCoord2f(1.0, 0.0);
     glVertex3d(-size/2,  size/2, -size/2);
+    
+    glEnd();
+    
+    glBindTexture(GL_TEXTURE_2D, leftTid);
+    glBegin(GL_QUADS);
     
     glNormal3d(1, 0, 0);
+    glTexCoord2f(0.0, 1.0);
     glVertex3d(-size/2, -size/2, -size/2);
+    glTexCoord2f(0.0, 0.0);
     glVertex3d(-size/2,  size/2, -size/2);
+    glTexCoord2f(1.0, 0.0);
     glVertex3d(-size/2,  size/2,  size/2);
+    glTexCoord2f(1.0, 1.0);
     glVertex3d(-size/2, -size/2,  size/2);
     
+    glEnd();
+    
     glBindTexture(GL_TEXTURE_2D, rightTid);
+    glBegin(GL_QUADS);
+    
     glNormal3d(-1, 0, 0);
     glTexCoord2f(0.0, 1.0);
     glVertex3d( size/2, -size/2,  size/2);
@@ -164,7 +186,11 @@ public:
     glTexCoord2f(1.0, 1.0);
     glVertex3d( size/2, -size/2, -size/2);
     
+    glEnd();
+    
     glBindTexture(GL_TEXTURE_2D, frontTid);
+    glBegin(GL_QUADS);
+    
     glNormal3d(0, 0, 1);
     glTexCoord2f(1.0, 0.0);
     glVertex3d(-size/2,  size/2, -size/2);
@@ -175,10 +201,19 @@ public:
     glTexCoord2f(0.0, 0.0);
     glVertex3d( size/2,  size/2, -size/2);
     
+    glEnd();
+    
+    glBindTexture(GL_TEXTURE_2D, backTid);
+    glBegin(GL_QUADS);
+    
     glNormal3d(0, 0, -1);
+    glTexCoord2f(0.0, 1.0);
     glVertex3d(-size/2, -size/2,  size/2);
+    glTexCoord2f(0.0, 0.0);
     glVertex3d(-size/2,  size/2,  size/2);
+    glTexCoord2f(1.0, 0.0);
     glVertex3d( size/2,  size/2,  size/2);
+    glTexCoord2f(1.0, 1.0);
     glVertex3d( size/2, -size/2,  size/2);
     
     glEnd();

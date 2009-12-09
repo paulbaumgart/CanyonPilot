@@ -46,7 +46,7 @@ void reshapeCallback(int w, int h)
   glViewport(0, 0, w, h);  // set new viewport size
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glFrustum(-10.0, 10.0, -10.0, 10.0, 10, 100000.0); // set perspective projection viewing frustum
+  glFrustum(-10.0, 10.0, -10.0, 10.0, 10, 2000.0); // set perspective projection viewing frustum
 }
 
 void loadData() {
@@ -55,6 +55,7 @@ void loadData() {
   cutsceneController.initialize();
   
   activeController = &cutsceneController;
+  activeController = &gameController;
   
   lastTime = getMicroTime();
   fps = 0;

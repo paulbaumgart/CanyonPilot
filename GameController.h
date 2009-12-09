@@ -23,7 +23,7 @@ public:
     airplane = new Airplane();
 
     Vector3 p0 = canyon->getFirstPosition();
-    skybox = new Skybox(1150);
+    skybox = new Skybox(1600);
     //airplane->setPosition(Vector3::MakeVector(p0[X], 50, p0[Z]));
     
     display->addChild(*airplane);
