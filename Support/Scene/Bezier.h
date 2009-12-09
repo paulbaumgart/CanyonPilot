@@ -92,6 +92,10 @@ class Bezier : public Shape3d {
       return n;
     }
     
+    int getNumSegments() {
+      return pointCounter / 3;
+    }
+    
     void drawObject(Matrix4& mat) {
       glLoadMatrixd(mat.getPointer());
       

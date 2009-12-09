@@ -50,6 +50,14 @@ public:
       togglePaused();
       timeout = 25;
     }
+    else if (timeout <= 0 && canyon->collisionWithPoint(airplane->getNose())) {
+      cerr << "Collision with nose!" << endl;
+      togglePaused();
+      timeout = 25;
+    }
+    else if (timeout <= 0 && canyon->aboveCanyon(airplane->getWingTip(false))) {
+      cerr << "Above canyon!" << endl;
+    }
   }
   
   virtual void draw() {

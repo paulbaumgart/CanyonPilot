@@ -43,6 +43,8 @@ class Airplane : public TransformGroup {
     }
     
     ~Airplane() {
+      delete airplane;
+      delete camera;
       delete planeObject;
     }
     
@@ -116,9 +118,10 @@ class Airplane : public TransformGroup {
       double angleXZ = atan2(-velocity[Z], velocity[X]) * 180 / M_PI + 90;
       double angleY = asin(velocity.normalize()[Y]) * 180 / M_PI;
       Vector3 orthoVel = Vector3::MakeVector(-velocity[Z], 0, velocity[X]);
-      double turnAngle = acos(orthoVel.dot(acceleration) / (orthoVel.length() * acceleration.length()));
+      double turnAngle = acos(orthoVel.dot(acceleration) / (orthoVel.length() * acceleration.length())) * 180 / M_PI - 90;
+      printf("turnAngle: %f\n", turnAngle);
       
-      airplane->getMatrix() = Matrix4::RotationYMatrix(0).multiply(Matrix4::RotationXMatrix(-angleY));
+      airplane->getMatrix() = Matrix4::RotationZMatrix(-turnAngle).multiply(Matrix4::RotationXMatrix(-angleY));
       
       getMatrix() = Matrix4::TranslationMatrix(position).multiply(Matrix4::RotationYMatrix(angleXZ));
     }
@@ -164,12 +167,15 @@ class Airplane : public TransformGroup {
     }
 
     Vector3 getWingTip(bool right=true) {
-      return getMatrix().multiply(airplane->getMatrix()).multiply(Vector3::MakeVector(right ? -8 : 8, 0, -1.5));
+      return getMatrix().multiply(airplane->getMatrix()).multiply(Vector3::MakeVector(right ? -6.5 : 6.5, -1, -4.5));
+    }
+    
+    Vector3 getNose() {
+      return getMatrix().multiply(airplane->getMatrix()).multiply(Vector3::MakeVector(0, 0, 7.5));
     }
     
     virtual void drawObject(Matrix4& mat) {
-      Matrix4 identity;
-      glColor3f(.8, .8, .8);
+      glColor3f(.5, .5, .5);
       TransformGroup::drawObject(mat);
     }
   private:

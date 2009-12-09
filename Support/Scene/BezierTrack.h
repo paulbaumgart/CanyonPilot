@@ -22,12 +22,13 @@ class BezierTrack : public Group {
     void step(double tStep) {
       t += tStep;
       
-      Vector3 position = bezier->getPoint(t);
-      Vector3 velocity = bezier->getTangent(t);
-      Vector3 acceleration = bezier->getAcceleration(t);
+      double usedT = fmin(t, bezier->getNumSegments() - 1e-9);
+      
+      Vector3 position = bezier->getPoint(usedT);
+      Vector3 velocity = bezier->getTangent(usedT);
+      Vector3 acceleration = bezier->getAcceleration(usedT);
       
       for (int i = 0; i < numChildren; i++) {
-        Vector3 v = Vector3::MakeVector(0, 0, 0);
         children[i]->orient(position, velocity, acceleration);
       }
     }
