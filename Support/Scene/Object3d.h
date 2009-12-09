@@ -25,7 +25,8 @@ class Object3d : public Shape3d {
     }
     
     virtual void drawObject(Matrix4& mat) {
-      glLoadMatrixd(mat.getPointer());
+      glMultMatrixd(mat.getPointer());
+      
       glBegin(GL_TRIANGLES);
       glColor3f(.8, .8, .8);
       for (int i = 0; i < nIndices; i += 3) {

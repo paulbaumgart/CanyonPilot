@@ -267,7 +267,7 @@ public:
       glEnd();
     }
 
-    int stepSize = 2;
+    /*int stepSize = 2;
     int bigStepSize = 4;
     int i;
 
@@ -335,7 +335,7 @@ public:
         glVertex3dv(v2.getPointer());
       }
       glEnd();
-    }    
+    }*/
   }
 
   int getYMin() {

@@ -3,7 +3,7 @@
 
 #include "Leaf.h"
 
-int textureCount = 1;
+extern int textureCount;
 
 class Shape3d : public Leaf {
 protected:
