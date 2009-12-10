@@ -58,9 +58,11 @@ public:
   virtual void step(double elapsed) {
     track->step(elapsed);
     badTrack->step(elapsed);
+    laser->step(elapsed);
     
-    if (laser->isDone()) {
+    if (laser->isDone() && track->getT() < 1.8) {
       laser->reset(badPlane->getPosition(), airplane->getPosition());
+      laser->miss();
     }
   }
   

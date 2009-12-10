@@ -175,7 +175,7 @@ class Airplane : public TransformGroup {
     }
     
     virtual void drawObject(Matrix4& mat) {
-      glColor3f(.5, .5, .5);
+      glColor3f(.1, .1, .1);
       TransformGroup::drawObject(mat);
     }
   private:
