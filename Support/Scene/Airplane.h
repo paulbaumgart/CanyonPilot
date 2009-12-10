@@ -19,10 +19,14 @@
 #define ROTATIONAL_MAG 2
 #define SPEED 160
 
+//Object3d planeObject("Objects/f22.obj");
+
 class Airplane : public TransformGroup {
   public:
     Airplane(double r, double g, double b) {
       allocate(2);
+      
+      dead = false;
       
       airplane = new TransformGroup(Matrix4::MakeMatrix(), 1);
       camera = new Camera(Vector3::MakeVector(0, 10, -18), Vector3::MakeVector(0, 5.0, 1), Vector3::MakeVector(0, 1, 0));
@@ -53,6 +57,11 @@ class Airplane : public TransformGroup {
     }
     
     void step(double elapsed) {
+      if (dead) {
+        timeSinceDeath += elapsed;
+        return;
+      }
+      
       /**** LEFT/RIGHT TURNING ****/
       double lrTurnMagnitude = LR_TURN_MAG * elapsed;
       
@@ -178,9 +187,36 @@ class Airplane : public TransformGroup {
       return getMatrix().multiply(airplane->getMatrix()).multiply(Vector3::MakeVector(0, 0, 7.5));
     }
     
+    void kill() {
+      timeSinceDeath = 0;
+      dead = true;
+    }
+    bool isDead() {
+      return dead;
+    }
+    
+    bool doneExploding() {
+      return timeSinceDeath > 3;
+    }
+    
     virtual void drawObject(Matrix4& mat) {
+      const float explosionRadius = 9.5;
       glColor3f(r, g, b);
-      TransformGroup::drawObject(mat);
+      
+      if (dead) {
+        glMultMatrixd(this->getMatrix().getPointer());
+        glColor3f(1, .7, 0);
+        if (timeSinceDeath < .5) {
+          TransformGroup::drawObject(mat);
+          glutSolidSphere(timeSinceDeath * explosionRadius * 2, 12, 12);
+        }
+        else if (timeSinceDeath < 1.5) {
+          glutSolidSphere(explosionRadius * 1.5 - timeSinceDeath * explosionRadius * .5 * 2, 12, 12);
+        }
+      }
+      else {
+        TransformGroup::drawObject(mat);
+      }
     }
   private:
     TransformGroup *airplane;
@@ -190,6 +226,8 @@ class Airplane : public TransformGroup {
     Vector3 direction;
     Vector3 position;
     double r, g, b;
+    double timeSinceDeath;
+    bool dead;
 };
 
 

@@ -34,9 +34,28 @@ public:
     display->addChild(*laser);
   }
   
+  void reset() {
+    delete display;
+    delete airplane;
+    delete laser;
+    
+    saveHighScore();
+    highscore.resetScore();
+    canyon->resetCanyon();
+    initialize();
+  }
+  
   virtual void step(double elapsed) {
     airplane->step(elapsed * speed);
     laser->step(elapsed);
+    
+    if (airplane->isDead() && airplane->doneExploding()) {
+      reset();
+      return;
+    }
+    else if (airplane->isDead()) {
+      return;
+    }
     
     Vector3 position = airplane->getPosition();
     if (position[Z] > (canyon->getYMin() + 10) * 4) {
@@ -51,28 +70,23 @@ public:
     
     if (laser->isDone() && killWithLaser) {
       cerr << "Shot dead by lasers. Don't fly so high!" << endl;
-      togglePaused();
-      timeout = 25;
+      airplane->kill();
     }
     if (timeout <= 0 && canyon->collisionWithPoint(airplane->getWingTip(true))) {
       cerr << "Collision with right wing!" << endl;
-      togglePaused();
-      timeout = 25;
+      airplane->kill();
     }
     else if (timeout <= 0 && canyon->collisionWithPoint(airplane->getWingTip(false))) {
       cerr << "Collision with left wing!" << endl;
-      togglePaused();
-      timeout = 25;
+      airplane->kill();
     }
     else if (timeout <= 0 && canyon->collisionWithPoint(airplane->getNose())) {
       cerr << "Collision with nose!" << endl;
-      togglePaused();
-      timeout = 25;
+      airplane->kill();
     }
     else if (timeout <= 0 && distAboveCanyon > 0 && laser->isDone()) {
       Vector3 planePosition = airplane->getPosition();
       Vector3 laserDirection = Matrix4::RotationYMatrix(180).multiply(airplane->getDirection().cross(Vector3::MakeVector(0, 1, 0)).scale(50));
-      laserDirection.print();
       laser->reset(planePosition + laserDirection, planePosition);
       
       int probability = distAboveCanyon;
@@ -82,7 +96,6 @@ public:
       else {
         laser->miss();
       }
-      cerr << "Above canyon!" << endl;
     }
 
     highscore.updateScore(elapsed * speed);

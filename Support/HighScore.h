@@ -39,6 +39,10 @@ class HighScore {
     snprintf(s, 20, "High Score: %u", highscore);
     drawText(104+offset, 15, s, kTopRight);
   }
+  
+  void resetScore() {
+    score = 0;
+  }
 
   void updateScore(double elapsed) {
     score += elapsed * 10;
@@ -51,5 +55,7 @@ class HighScore {
     FILE* f = fopen(file, "w");
     fprintf(f, "%u", (int)score);
     fclose(f);
+    
+    highscore = (int)score;
   }
 };

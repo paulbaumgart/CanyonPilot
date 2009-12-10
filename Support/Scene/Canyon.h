@@ -56,6 +56,13 @@ public:
     int index = point[Z] > getYMin()*4 ? middleSegment : currentSegment; 
     return children[index]->aboveCanyon(point);
   }
+  
+  void resetCanyon() {
+    delete children[0];
+    delete children[1];
+    delete children[2];
+    initialize();
+  }
 
 private:
   CanyonSegment* children[3];
@@ -69,6 +76,10 @@ private:
   int mapWidth;
  
   Canyon() {
+    initialize();
+  }
+  
+  void initialize() {
     int xStart, yStart, xNext;
 
     mapWidth = mapHeight = 128;
