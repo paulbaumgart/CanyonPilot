@@ -23,6 +23,7 @@ public:
     speed = 1;
     timeout = 2;
     killWithLaser = false;
+    displayDeathMessage = false;
     
     display = new TransformGroup(Matrix4::TranslationMatrix(0, 0, 0), 2);
     airplane = new Airplane(.1, .1, .1);
@@ -49,6 +50,10 @@ public:
     airplane->step(elapsed * speed);
     laser->step(elapsed);
     
+    if (displayDeathMessage) {
+      drawText(deathMessage, kCenter);
+    }
+    
     if (airplane->isDead() && airplane->doneExploding()) {
       reset();
       return;
@@ -69,18 +74,26 @@ public:
     double distAboveCanyon = canyon->aboveCanyon(airplane->getNose());
     
     if (laser->isDone() && killWithLaser) {
+      deathMessage = "You have been killed by enemy lasers!";
+      displayDeathMessage = true;
       cerr << "Shot dead by lasers. Don't fly so high!" << endl;
       airplane->kill();
     }
     if (timeout <= 0 && canyon->collisionWithPoint(airplane->getWingTip(true))) {
+      deathMessage = "Collision with the right wing!";
+      displayDeathMessage = true;
       cerr << "Collision with right wing!" << endl;
       airplane->kill();
     }
     else if (timeout <= 0 && canyon->collisionWithPoint(airplane->getWingTip(false))) {
+      deathMessage = "Collision with the left wing!";
+      displayDeathMessage = true;
       cerr << "Collision with left wing!" << endl;
       airplane->kill();
     }
     else if (timeout <= 0 && canyon->collisionWithPoint(airplane->getNose())) {
+      deathMessage = "Collision with the nose!";
+      displayDeathMessage = true;
       cerr << "Collision with nose!" << endl;
       airplane->kill();
     }
@@ -163,7 +176,8 @@ private:
   TransformGroup* display;
   Laser* laser;
   int speed, timeout;
-  bool killWithLaser;
+  bool killWithLaser, displayDeathMessage;
+  char * deathMessage;
 };
 
 #endif

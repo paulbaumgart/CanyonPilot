@@ -35,6 +35,7 @@ Skybox *skybox;
 GLuint canyonTexture = textureCount++;
 
 bool paused = false;
+bool redCollisions = false;
 
 GameController gameController;
 CutsceneController cutsceneController;
@@ -138,6 +139,9 @@ void keyDownHandler(int key, int, int)
   else if(-key == 27) {
     gameController.saveHighScore();
     exit(0);
+  }
+  else if (-key == 't') {
+    redCollisions = !redCollisions;
   }
 
   activeController->keyDownHandler(key);
