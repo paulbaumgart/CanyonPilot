@@ -21,7 +21,7 @@
 
 class Airplane : public TransformGroup {
   public:
-    Airplane() {
+    Airplane(double r, double g, double b) {
       allocate(2);
       
       airplane = new TransformGroup(Matrix4::MakeMatrix(), 1);
@@ -40,6 +40,10 @@ class Airplane : public TransformGroup {
       udTurnVel = 0;
       direction = Vector3::MakeVector(0, 0, 1);
       position = Vector3::MakeVector(0, 50, 0);
+      
+      this->r = r;
+      this->b = b;
+      this->g = g;
     }
     
     ~Airplane() {
@@ -175,7 +179,7 @@ class Airplane : public TransformGroup {
     }
     
     virtual void drawObject(Matrix4& mat) {
-      glColor3f(.1, .1, .1);
+      glColor3f(r, g, b);
       TransformGroup::drawObject(mat);
     }
   private:
@@ -185,6 +189,7 @@ class Airplane : public TransformGroup {
     double lrTurnAccel, lrTurnVel, udTurnAccel, udTurnVel;
     Vector3 direction;
     Vector3 position;
+    double r, g, b;
 };
 
 
