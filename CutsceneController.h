@@ -69,6 +69,9 @@ public:
   virtual void draw() {
     Matrix4 identity;
     
+    glPushAttrib(GL_ENABLE_BIT);
+    glDisable(GL_FOG);
+    
     int view = (track->getT() < 1 && false) ? 1 : 2;
     Vector3 position = airplane->getPosition();
     Vector3 camera = Vector3::MakeVector(250, 250, -320);
@@ -97,6 +100,8 @@ public:
     else if (view == 2) {
       skybox->draw(position - camera);
     }
+    
+    glPopAttrib();
   }
   
   virtual void keyDownHandler(int key) {}

@@ -35,7 +35,8 @@ Skybox *skybox;
 GLuint canyonTexture = textureCount++;
 
 bool paused = false;
-bool redCollisions = false;
+bool redCollisions = true;
+bool skipCutscene = false;
 
 GameController gameController;
 CutsceneController cutsceneController;
@@ -50,8 +51,8 @@ void reshapeCallback(int w, int h)
   glViewport(0, 0, w, h);  // set new viewport size
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(90, (double)w/h, 10, 10000);
-//  glFrustum(-10.0, 10.0, -10.0, 10.0, 10, 10000.0); // set perspective projection viewing frustum
+  gluPerspective(90, (double)w/h, 1, 10000);
+  //glFrustum(-10.0, 10.0, -10.0, 10.0, 1, 10000.0); // set perspective projection viewing frustum
 }
 
 void loadData() {
@@ -84,7 +85,7 @@ void step() {
 
   fps = 1 / (t - lastTime);
 
-  if (activeController == &cutsceneController && cutsceneController.isDone()) {
+  if (activeController == &cutsceneController && cutsceneController.isDone() || skipCutscene) {
     activeController = &gameController;
   } 
 
@@ -142,6 +143,9 @@ void keyDownHandler(int key, int, int)
   }
   else if (-key == 't') {
     redCollisions = !redCollisions;
+  }
+  else if (-key == 's') {
+    skipCutscene = true;
   }
 
   activeController->keyDownHandler(key);

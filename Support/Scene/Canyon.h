@@ -91,7 +91,7 @@ private:
 
     xStart = xNext = 0;
     yStart = -384;
-    CanyonSegment* firstSeg = new CanyonSegment(xStart, yStart, mapWidth, mapHeight + 384, 1);
+    CanyonSegment* firstSeg = new CanyonSegment(xStart, yStart, mapWidth, 512, 1);
 
     xStart = firstSeg->getControlPoint(3)[X];
     yStart = mapHeight;

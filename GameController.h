@@ -126,14 +126,14 @@ public:
     
     display->setCamera(identity);
     
-    glPushMatrix();
-    display->draw(identity);
-    glPopMatrix();
-    
     canyon->draw();
     
+    glPushMatrix();
     glLoadIdentity();
     skybox->draw(airplane->getDirection());
+    glPopMatrix();
+    
+    display->draw(identity);
 
     highscore.draw();
   }

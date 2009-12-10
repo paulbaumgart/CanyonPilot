@@ -5,7 +5,7 @@
 #include "Rect.h"
 #include "Camera.h"
 #include "BezierTrack.h"
-#include "Object3d.h"
+#include "AirplaneObject.h"
 #include <math.h>
 
 #define LEFT -1
@@ -30,7 +30,7 @@ class Airplane : public TransformGroup {
       
       airplane = new TransformGroup(Matrix4::MakeMatrix(), 1);
       camera = new Camera(Vector3::MakeVector(0, 10, -18), Vector3::MakeVector(0, 5.0, 1), Vector3::MakeVector(0, 1, 0));
-      planeObject = new Object3d("Objects/f22.obj");
+      planeObject = new AirplaneObject("Objects/f22.obj");
       planeObject->scale(20);
       
       airplane->addChild(*planeObject);
@@ -59,6 +59,7 @@ class Airplane : public TransformGroup {
     void step(double elapsed) {
       if (dead) {
         timeSinceDeath += elapsed;
+        planeObject->step(elapsed);
         return;
       }
       
@@ -189,6 +190,8 @@ class Airplane : public TransformGroup {
     
     void kill() {
       timeSinceDeath = 0;
+      planeObject->explode();
+      airplane->getMatrix() = Matrix4::MakeMatrix();
       dead = true;
     }
     bool isDead() {
@@ -205,14 +208,22 @@ class Airplane : public TransformGroup {
       
       if (dead) {
         glMultMatrixd(this->getMatrix().getPointer());
-        glColor3f(1, .7, 0);
-        if (timeSinceDeath < .5) {
-          TransformGroup::drawObject(mat);
+        airplane->drawObject(mat);
+        
+        glPushAttrib(GL_ENABLE_BIT);
+        glDisable(GL_CULL_FACE);
+        glEnable (GL_BLEND);
+        glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        
+        glColor4f(1, .4, 0, pow(1 - timeSinceDeath / 2, 2));
+        if (true || timeSinceDeath < .5) {
           glutSolidSphere(timeSinceDeath * explosionRadius * 2, 12, 12);
         }
         else if (timeSinceDeath < 1.5) {
           glutSolidSphere(explosionRadius * 1.5 - timeSinceDeath * explosionRadius * .5 * 2, 12, 12);
         }
+        
+        glPopAttrib();
       }
       else {
         TransformGroup::drawObject(mat);
@@ -220,7 +231,7 @@ class Airplane : public TransformGroup {
     }
   private:
     TransformGroup *airplane;
-    Object3d *planeObject;
+    AirplaneObject *planeObject;
     Camera *camera;
     double lrTurnAccel, lrTurnVel, udTurnAccel, udTurnVel;
     Vector3 direction;

@@ -17,17 +17,28 @@ class Object3d : public Shape3d {
         vertices[i] = Vector3::MakeVector(rawVertices[i*3], rawVertices[i*3 + 1], rawVertices[i*3 + 2]);
       }
       
+      free(rawVertices);
+      
       normalize();
     }
     
     ~Object3d() {
       delete[] vertices;
+      
+      if (normals)
+        free(normals);
+      
+      if (texcoords)
+        free(texcoords);
+      
+      if (indices)
+        free(indices);
     }
     
     virtual void drawObject(Matrix4& mat) {
       glMultMatrixd(mat.getPointer());
       
-      glBegin(GL_TRIANGLES);
+      glBegin(GL_TRIANGLES);      
       for (int i = 0; i < nIndices; i += 3) {
         if (normals)
           glNormal3fv(&normals[indices[i] * 3]);
@@ -99,7 +110,7 @@ class Object3d : public Shape3d {
         }
       }
     }
-  private:
+  protected:
     int nVerts;
     Vector3 *vertices;
     float *normals;
