@@ -61,7 +61,7 @@ public:
     laser->step(elapsed);
     
     if (laser->isDone() && track->getT() < 1.8) {
-      laser->reset(badPlane->getPosition(), airplane->getPosition());
+      laser->reset(badPlane->getNose(), airplane->getNose());
       laser->miss();
     }
   }

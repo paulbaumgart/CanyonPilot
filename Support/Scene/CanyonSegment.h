@@ -207,11 +207,11 @@ public:
     }
   }
   
-  bool aboveCanyon(Vector3 point) {
+  double aboveCanyon(Vector3 point) {
     Vector3 coords = getHeightMapCoords(point);
     int index = coords[Y];
     
-    return point[Y] > heights[index];
+    return point[Y] - heights[index];
   }
 
   bool fancyPantsPointOnBackSide(Vector3 point) {

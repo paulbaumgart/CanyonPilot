@@ -8,7 +8,7 @@
 #include <GL/glut.h>
 #endif
 
-#define LASER_STEP 8
+#define LASER_STEP 5
 
 class Laser : public Leaf {
   public:

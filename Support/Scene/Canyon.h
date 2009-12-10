@@ -51,7 +51,7 @@ public:
     return children[index]->pointOnBackSide(point);
   }
   
-  bool aboveCanyon(Vector3 point) {
+  double aboveCanyon(Vector3 point) {
     // Need to test the current or the next segment?
     int index = point[Z] > getYMin()*4 ? middleSegment : currentSegment; 
     return children[index]->aboveCanyon(point);
