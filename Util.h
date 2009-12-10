@@ -81,30 +81,53 @@ void renderBitmapString(float x, float y, char *string)
   glEnable(GL_LIGHTING);
 }
 
-enum windowCorner {
+enum textPosition {
   kBottomLeft = 0,
   kBottomRight,
   kTopLeft,
-  kTopRight
+  kTopRight,
+  kCenter
+  
 };
 
-void drawText(int x, int y, char* s, enum windowCorner relativeTo) {
+void drawText(char* s, enum textPosition position, int xoff = 0, int yoff = 0) {
   glPushMatrix();
   glColor3f(0.0f,1.0f,1.0f);
   setOrthographicProjection();
   glLoadIdentity();
-  switch (relativeTo) {
+
+  const int charwidth = 8;
+  const int charheight = 13;
+
+  const int len = strlen(s) * charwidth;
+
+  int x, y;
+
+  switch (position) {
     case kBottomLeft:
-      y = height - y;
+      x = charwidth;
+      y = height - charheight;
       break;
     case kBottomRight:
-      y = height - y;
-      x = width - x;
+      x = width - len - charwidth;
+      y = height - charheight;
+      break;
+    case kTopLeft:
+      x = charwidth;
+      y = charheight;
       break;
     case kTopRight:
-      x = width - x;
+      x = width - len - charwidth;
+      y = charheight;
+      break;
+    case kCenter:
+      x = width/2 - len/2;
+      y = height/2 - charheight;
       break;
   }
+
+  x += xoff;
+  y += yoff;
 
   renderBitmapString(x, y, s);
   resetPerspectiveProjection();

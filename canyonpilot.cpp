@@ -119,7 +119,7 @@ void displayCallback(void)
 
   char s[10];
   snprintf(s, 10, "FPS: %0.2f", fps);
-  drawText(92, 10, s, kBottomRight);
+  drawText(s, kBottomRight);
 
   glFlush();
   glutSwapBuffers();

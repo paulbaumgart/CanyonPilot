@@ -35,9 +35,9 @@ class HighScore {
   void draw() {
     char s[20];
     snprintf(s, 20, "Score: %u ", (int)score);
-    drawText(5, 15, s, kTopLeft);
+    drawText(s, kTopLeft);
     snprintf(s, 20, "High Score: %u", highscore);
-    drawText(104+offset, 15, s, kTopRight);
+    drawText(s, kTopRight);
   }
   
   void resetScore() {
