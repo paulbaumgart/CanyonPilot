@@ -18,7 +18,7 @@ class HighScore {
     
     FILE* f = fopen(file, "r");
 
-    if (file) {
+    if (f) {
       fscanf(f, "%u", &highscore);
       cerr << "Current highscore: " << highscore << endl;
     }
