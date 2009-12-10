@@ -21,7 +21,7 @@ The lasers are drawn on the screen using OpenGL's line drawing functions.
 
 The player's score is calculated based on the amount of time before the plane crashes. A high score is maintained in a file.
 
-Below is a summary of the technical features to be included in this project:
+Below is a summary of the technical features included in this project:
 
 - Per-quad collision detection
 - Piecewise Bezier curves as paths
