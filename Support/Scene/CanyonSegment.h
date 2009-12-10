@@ -241,7 +241,10 @@ public:
 
 
   void setColor(double height) {
-    if (height > 10 && height < 15) {
+    if (height < 0) {
+      glColor3d(0.2, 0.2, 1);
+    }
+    else if (height > 10 && height < 15) {
       glColor3d(1, 0.95, 1);
     }
     else if (height > 45 && height < 50) {
