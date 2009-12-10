@@ -8,12 +8,16 @@
 #include <GL/glut.h>
 #endif
 
-#define LASER_STEP 2
+#define LASER_STEP 8
 
 class Laser : public Leaf {
   public:
     Laser() {
       t = 1;
+    }
+    
+    void miss() {
+      direction = direction.scale(5);
     }
     
     void reset(Vector3 start, Vector3 end) {
@@ -27,23 +31,32 @@ class Laser : public Leaf {
     }
     
     virtual void drawObject(Matrix4& mat) {
-      if (isDone()) {
+      if (t > .9) {
         return;
       }
+      
+      glMultMatrixd(mat.getPointer());
     
+      glPushAttrib(GL_ENABLE_BIT);
+      glDisable(GL_LIGHTING);
+      glDisable(GL_BLEND);
+      glDisable(GL_FOG);
+      
       glColor3f(1, 0, 0);
       
+      glLineWidth(3);
       glBegin(GL_LINES);
       Vector3 s = startPosition + direction.scale(t);
-      Vector3 e = startPosition + direction.scale(t + .1);
+      Vector3 e = startPosition + direction.scale(t + .2);
       glVertex3dv(s.getPointer());
       glVertex3dv(e.getPointer());
       glEnd();
-      return;
+      
+      glPopAttrib();
     }
     
     bool isDone() {
-      return t > .9;
+      return t > 2.2;
     }
   private:
     Vector3 startPosition, direction;
