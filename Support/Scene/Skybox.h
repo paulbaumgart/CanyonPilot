@@ -120,7 +120,7 @@ public:
   }
   
   void draw(Vector3 velocity) {
-    glRotated(atan2(velocity[Z], velocity[X]) * 180 / M_PI, 0, 1, 0);
+    glRotated(atan2(velocity[Z], velocity[X]) * 180 / M_PI - 180, 0, 1, 0);
     glTranslated(0, size/6, 0);
     
     glPushAttrib(GL_ENABLE_BIT);
@@ -219,6 +219,10 @@ public:
     
     glEnd();
     glPopAttrib();
+    
+    //glLoadIdentity();
+    float lightPosition[] = {-100.0f, 100.0f, -100.0f, 1.0f};
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
   }
 private:
   int size, frontTid, backTid, upTid, downTid, leftTid, rightTid;

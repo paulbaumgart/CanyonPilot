@@ -17,7 +17,7 @@ class Laser : public Leaf {
     }
     
     void miss() {
-      direction = direction.scale(5);
+      direction = (direction + Vector3::MakeVector(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5)).scale(5);
     }
     
     void reset(Vector3 start, Vector3 end) {
