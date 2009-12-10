@@ -4,6 +4,8 @@
 #include "TransformGroup.h"
 #include "Bezier.h"
 
+#define STEP_SIZE .4
+
 class BezierTrack : public Group {
   public:
     BezierTrack() {
@@ -19,8 +21,8 @@ class BezierTrack : public Group {
       bezier->addPoint(x, y, z);
     }
     
-    void step(double tStep) {
-      t += tStep;
+    void step(double elapsed) {
+      t += elapsed * STEP_SIZE;
       
       double usedT = fmin(t, bezier->getNumSegments() - 1e-9);
       

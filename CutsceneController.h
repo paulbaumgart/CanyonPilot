@@ -7,10 +7,9 @@
 #include "Support/Scene/Airplane.h"
 #include "Support/Scene/Canyon.h"
 #include "Support/Scene/Skybox.h"
+#include "Support/Scene/Laser.h"
 #include "Controller.h"
 #include "Util.h"
-
-#define STEP_SIZE .4
 
 extern void togglePaused();
 extern Canyon *canyon;
@@ -23,7 +22,8 @@ public:
     badTrack = new BezierTrack();
     airplane = new Airplane();
     badPlane = new Airplane();
-    display = new TransformGroup(Matrix4::TranslationMatrix(0, 0, 0), 2);
+    laser = new Laser();
+    display = new TransformGroup(Matrix4::TranslationMatrix(0, 0, 0), 3);
     
     track->addPoint(600, 190, -190);
     track->addPoint(500, 200, -210);
@@ -52,11 +52,16 @@ public:
     
     display->addChild(*track);
     display->addChild(*badTrack);
+    display->addChild(*laser);
   }
   
   virtual void step(double elapsed) {
-    track->step(elapsed * STEP_SIZE);
-    badTrack->step(elapsed * STEP_SIZE);
+    track->step(elapsed);
+    badTrack->step(elapsed);
+    
+    if (laser->isDone()) {
+      laser->reset(badPlane->getPosition(), airplane->getPosition());
+    }
   }
   
   virtual void draw() {
@@ -101,6 +106,7 @@ public:
 private:
   Airplane *airplane, *badPlane;
   BezierTrack *track, *badTrack;
+  Laser *laser;
   TransformGroup* display;
 };
 
