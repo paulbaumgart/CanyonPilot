@@ -21,7 +21,7 @@ public:
     timeout = 2;
     
     display = new TransformGroup(Matrix4::TranslationMatrix(0, 0, 0), 1);
-    airplane = new Airplane();
+    airplane = new Airplane(.1, .1, .1);
 
     Vector3 p0 = canyon->getFirstPosition();
     

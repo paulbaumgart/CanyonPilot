@@ -20,8 +20,8 @@ public:
   virtual void initialize() {
     track = new BezierTrack();
     badTrack = new BezierTrack();
-    airplane = new Airplane();
-    badPlane = new Airplane();
+    airplane = new Airplane(.1, .1, .1);
+    badPlane = new Airplane(.9, .1, .1);
     laser = new Laser();
     display = new TransformGroup(Matrix4::TranslationMatrix(0, 0, 0), 3);
     
