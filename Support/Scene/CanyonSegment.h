@@ -12,6 +12,8 @@ using namespace std;
 #define DIFFICULTY_COEFFICIENT(d) (sqrt((d) + 2.0) / 40)
 #define TOP_OF_CANYON 100
 
+extern GLuint canyonTexture;
+
 class CanyonSegment : public Node {
 
 private:
@@ -32,7 +34,7 @@ public:
     this->startDifficulty = difficulty;
     this->endDifficulty = difficulty;
     this->collidedx = this->collidedy = -1;
-    
+
     controlPoints[0] = Vector3::MakeVector(xStart, yStart, 0);
     controlPoints[1] = Vector3::MakeVector(xStart, yStart + height / 3.0, 0);
     controlPoints[2] = Vector3::MakeVector(xStart, yStart + height * 2 / 3.0, 0);
@@ -136,7 +138,7 @@ public:
   }
 
   double getNoise() {
-    return (rand() % 2000 - 1000) / 100.0;
+    return (rand() % 2000 - 1000) / 200.0;
   }
   
   double getTerrain(int y, int x) {
@@ -235,8 +237,22 @@ public:
   }
 
   void draw() {
+    glPushAttrib(GL_ENABLE_BIT);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, canyonTexture);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+            GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
+            GL_LINEAR_MIPMAP_LINEAR);
+    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+
     glBegin(GL_QUAD_STRIP);
     glColor3f(.8, .8, .8);
+
+    const int texture_fudge = 10;
 
     // Connect to previous segment
     if (previous) {
@@ -252,9 +268,16 @@ public:
 
         Vector3 normal = (v3 - v2).cross(v1 - v2).normalize();
         glNormal3dv(normal.getPointer());
-        setColor(v1[Y]);
+        //setColor(v1[Y]);
+
+        double tex_x = (double)i / xEndOffset * 5;
+        double tex_y = 0;
+
+        glTexCoord2f(tex_y, tex_x);
         glVertex3dv(v1.getPointer());
-        setColor(v2[Y]);
+        //setColor(v2[Y]);
+        tex_y = 1.0 / height * texture_fudge;
+        glTexCoord2f(tex_y, tex_x);
         glVertex3dv(v2.getPointer());
       }
     }
@@ -270,84 +293,24 @@ public:
         Vector3 v2 = getPoint(i, j + 1);
         Vector3 v3 = getPoint(i + 1, j + 1);
         Vector3 normal = (v3 - v2).cross(v1 - v2).normalize();
+
+        double tex_x = (double)i / xEndOffset * texture_fudge;
+        double tex_y = (double)j / height * texture_fudge;
+
         glNormal3dv(normal.getPointer());
-        makeRed ? glColor3d(1,0,0) : setColor(v1[Y]);
+        makeRed ? glColor3d(1,0,0) : glColor3d(1,1,1);//setColor(v1[Y]);
+        glTexCoord2f(tex_y, tex_x);
         glVertex3dv(v1.getPointer());
-        makeRed ? glColor3d(1,0,0) : setColor(v2[Y]);
+
+        tex_y = (double)(j+1) / height * texture_fudge;
+        makeRed ? glColor3d(1,0,0) : glColor3d(1,1,1); //setColor(v2[Y]);
+        glTexCoord2f(tex_y, tex_x);
         glVertex3dv(v2.getPointer());
       }
       glEnd();
     }
 
-    /*int stepSize = 2;
-    int bigStepSize = 4;
-    int i;
-
-    for (int j = 0; j < height; j += stepSize) {
-      glBegin(GL_QUAD_STRIP);
-      for (i = xStartOffset; i >= stepSize; i -= stepSize) {
-        bool makeRed = (i == collidedx && j == collidedy);
-        Vector3 v1 = getPoint(i, j);
-        Vector3 v2 = getPoint(i, j - stepSize);
-        Vector3 v3 = getPoint(i - stepSize, j - stepSize);
-        Vector3 normal = (v3 - v2).cross(v1 - v2);
-        normal.normalize();
-        glNormal3dv(normal.getPointer());
-        makeRed ? glColor3d(1,0,0) : setColor(v1[Y]);
-        glVertex3dv(v1.getPointer());
-        makeRed ? glColor3d(1,0,0) : setColor(v2[Y]);
-        glVertex3dv(v2.getPointer());
-      }
-      glEnd();
-      
-      glBegin(GL_QUAD_STRIP);
-      for (i += stepSize; i >= -100; i -= bigStepSize) {
-        bool makeRed = (i == collidedx && j == collidedy);
-        Vector3 v1 = getTerrainPoint(i, j);
-        Vector3 v2 = getTerrainPoint(i, j - bigStepSize);
-        Vector3 v3 = getTerrainPoint(i - bigStepSize, j - bigStepSize);
-        Vector3 normal = (v3 - v2).cross(v1 - v2);
-        normal.normalize();
-        glNormal3dv(normal.getPointer());
-        makeRed ? glColor3d(1,0,0) : setColor(v1[Y]);
-        glVertex3dv(v1.getPointer());
-        makeRed ? glColor3d(1,0,0) : setColor(v2[Y]);
-        glVertex3dv(v2.getPointer());
-      }
-      glEnd();
-
-      glBegin(GL_QUAD_STRIP);
-      for (i = xEndOffset; i < width - stepSize; i += stepSize) {
-        bool makeRed = (i == collidedx && j == collidedy);
-        Vector3 v1 = getPoint(i, j);
-        Vector3 v2 = getPoint(i, j + stepSize);
-        Vector3 v3 = getPoint(i + stepSize, j + stepSize);
-        Vector3 normal = (v3 - v2).cross(v1 - v2);
-        normal.normalize();
-        glNormal3dv(normal.getPointer());
-        makeRed ? glColor3d(1,0,0) : setColor(v1[Y]);
-        glVertex3dv(v1.getPointer());
-        makeRed ? glColor3d(1,0,0) : setColor(v2[Y]);
-        glVertex3dv(v2.getPointer());
-      }
-      glEnd();
-      
-      glBegin(GL_QUAD_STRIP);
-      for (i -= stepSize; i < width + 100; i += bigStepSize) {
-        bool makeRed = (i == collidedx && j == collidedy);
-        Vector3 v1 = getTerrainPoint(i, j);
-        Vector3 v2 = getTerrainPoint(i, j + bigStepSize);
-        Vector3 v3 = getTerrainPoint(i + bigStepSize, j + bigStepSize);
-        Vector3 normal = (v3 - v2).cross(v1 - v2);
-        normal.normalize();
-        glNormal3dv(normal.getPointer());
-        makeRed ? glColor3d(1,0,0) : setColor(v1[Y]);
-        glVertex3dv(v1.getPointer());
-        makeRed ? glColor3d(1,0,0) : setColor(v2[Y]);
-        glVertex3dv(v2.getPointer());
-      }
-      glEnd();
-    }*/
+    glPopAttrib();
   }
 
   int getYMin() {

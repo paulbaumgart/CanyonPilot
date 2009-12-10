@@ -32,6 +32,7 @@ int textureCount = 1;
 double lastTime, fps;
 Canyon *canyon;
 Skybox *skybox;
+GLuint canyonTexture = textureCount++;
 
 bool paused = false;
 
@@ -56,9 +57,18 @@ void loadData() {
   skybox = new Skybox(10000);
   gameController.initialize();
   cutsceneController.initialize();
+
+  int tex_w, tex_h;
+  unsigned char* image = loadPPM("Textures/canyon.pbm", tex_w, tex_h);
+  glBindTexture(GL_TEXTURE_2D, canyonTexture);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  gluBuild2DMipmaps(GL_TEXTURE_2D, 3, tex_w, tex_h, GL_RGB, GL_UNSIGNED_BYTE, image);
   
+  free(image);
+
+
   activeController = &cutsceneController;
-  
+
   lastTime = getMicroTime();
   fps = 0;
 }
@@ -71,7 +81,7 @@ void step() {
   }
 
   fps = 1 / (t - lastTime);
-  
+
   if (activeController == &cutsceneController && cutsceneController.isDone()) {
     activeController = &gameController;
   } 
@@ -94,14 +104,14 @@ void displayCallback(void)
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
   glMatrixMode(GL_MODELVIEW);
-  
+
   glLoadIdentity();
-  
+
   float specular[] = {0.0, 0.0, 0.0, 1.0};
   float diffuse[] = {1.0, 1.0, 1.0, 1.0};
   glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
   glMaterialfv(GL_FRONT, GL_SPECULAR, diffuse);
-  
+
   step();
 
   activeController->draw();
@@ -112,7 +122,7 @@ void displayCallback(void)
 
   glFlush();
   glutSwapBuffers();
-  
+
   pthread_mutex_unlock(&drawMutex);
 }
 
@@ -124,9 +134,9 @@ void keyDownHandler(int key, int, int)
 {
   if (-key == 'p')
     togglePaused();
-    
+
   activeController->keyDownHandler(key);
-  
+
   displayCallback();
 }
 
@@ -137,7 +147,7 @@ void charKeyDownHandler(unsigned char key, int a, int b) {
 void keyUpHandler(int key, int, int)
 {
   activeController->keyUpHandler(key);
-  
+
   displayCallback();
 }
 
@@ -153,7 +163,7 @@ void togglePaused() {
   else {
     glutIdleFunc(NULL);
   }
-  
+
   paused = !paused;
 }
 
@@ -162,14 +172,14 @@ int main(int argc, char *argv[])
   GLfloat mat_specular[]   = { 1.0, 1.0, 1.0, 1.0 };
   GLfloat mat_shininess[]  = { 50.0 };
   GLfloat light0_position[] = { 10.0, 10.0, 10.0, 0.0 };
-  
+
   glutInit(&argc, argv);      	      	      // initialize GLUT
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);   // open an OpenGL context with double buffering, RGB colors, and depth buffering
   glutInitWindowSize(width, height);      // set initial window size
   glutCreateWindow("Looking for something?");    	                // open window and set window title
-  
+
   float fogColor[] = {0.5, 0.5, 0.5, 1.0};
-                                          
+
   glFogi(GL_FOG_MODE, GL_LINEAR);
   glFogfv(GL_FOG_COLOR, fogColor);
   glFogf(GL_FOG_DENSITY, 0.35f);
@@ -179,20 +189,20 @@ int main(int argc, char *argv[])
   glEnable(GL_FOG);
 
   glCullFace(GL_BACK);
-  //glEnable(GL_CULL_FACE);
+  glEnable(GL_CULL_FACE);
   glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
   glEnable(GL_COLOR_MATERIAL);
-  
+
   glEnable(GL_DEPTH_TEST);            	      // enable depth buffering
   glClearColor(0.0, 0.0, 0.0, 0.0);   	      // set clear color to black
   glMatrixMode(GL_PROJECTION); 
-  
+
   loadData();
-  
+
   // Generate material properties:
   glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
   glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-  
+
   // Generate light source:
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -200,17 +210,17 @@ int main(int argc, char *argv[])
 
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
-  
+
   // Install callback functions:
   glutDisplayFunc(displayCallback);
   glutReshapeFunc(reshapeCallback);
-  
+
   glutIdleFunc(displayCallback);
   glutSpecialFunc(keyDownHandler);
   glutSpecialUpFunc(keyUpHandler);
   glutKeyboardFunc(charKeyDownHandler);
   glutKeyboardUpFunc(charKeyUpHandler);
-    
+
   glutMainLoop();
   return 0;
 }
