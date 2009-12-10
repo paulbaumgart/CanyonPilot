@@ -7,6 +7,7 @@
 #include "Support/Scene/Airplane.h"
 #include "Support/Scene/Canyon.h"
 #include "Support/Scene/Skybox.h"
+#include "Support/Scene/Laser.h"
 #include "Controller.h"
 #include "Util.h"
 
@@ -19,17 +20,21 @@ public:
   virtual void initialize() {
     speed = 1;
     timeout = 2;
+    killWithLaser = false;
     
-    display = new TransformGroup(Matrix4::TranslationMatrix(0, 0, 0), 1);
+    display = new TransformGroup(Matrix4::TranslationMatrix(0, 0, 0), 2);
     airplane = new Airplane(.1, .1, .1);
+    laser = new Laser();
 
     Vector3 p0 = canyon->getFirstPosition();
     
     display->addChild(*airplane);
+    display->addChild(*laser);
   }
   
   virtual void step(double elapsed) {
     airplane->step(elapsed * speed);
+    laser->step(elapsed);
     
     Vector3 position = airplane->getPosition();
     if (position[Z] > (canyon->getYMin() + 10) * 4) {
@@ -40,6 +45,13 @@ public:
       timeout--;
     }
     
+    double distAboveCanyon = canyon->aboveCanyon(airplane->getNose());
+    
+    if (laser->isDone() && killWithLaser) {
+      cerr << "Shot dead by lasers. Don't fly so high!" << endl;
+      togglePaused();
+      timeout = 25;
+    }
     if (timeout <= 0 && canyon->collisionWithPoint(airplane->getWingTip(true))) {
       cerr << "Collision with right wing!" << endl;
       togglePaused();
@@ -55,7 +67,19 @@ public:
       togglePaused();
       timeout = 25;
     }
-    else if (timeout <= 0 && canyon->aboveCanyon(airplane->getWingTip(false))) {
+    else if (timeout <= 0 && distAboveCanyon > 0 && laser->isDone()) {
+      Vector3 planePosition = airplane->getPosition();
+      Vector3 laserDirection = Matrix4::RotationYMatrix(180).multiply(airplane->getDirection().cross(Vector3::MakeVector(0, 1, 0)).scale(50));
+      laserDirection.print();
+      laser->reset(planePosition + laserDirection, planePosition);
+      
+      int probability = distAboveCanyon;
+      if (rand() % 100 < probability) {
+        killWithLaser = true;
+      }
+      else {
+        laser->miss();
+      }
       cerr << "Above canyon!" << endl;
     }
   }
@@ -114,7 +138,9 @@ public:
 private:
   Airplane* airplane;
   TransformGroup* display;
+  Laser* laser;
   int speed, timeout;
+  bool killWithLaser;
 };
 
 #endif
