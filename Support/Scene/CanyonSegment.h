@@ -24,6 +24,7 @@ private:
   CanyonSegment* previous;
   int collidedx, collidedy;
   int terrainSize;
+  double *tangentAngles;
   
 public:
   CanyonSegment(int xStart, int yStart, int w, int h, int difficulty) {
@@ -81,7 +82,8 @@ public:
 
     points = new double[width * height];
     heights = new double[height];
-    
+    //tangentAngles = new double[width * height];
+
     for (int i = 0; i < height; i++) {
       heights[i] = 0;
     }
@@ -92,6 +94,8 @@ public:
     terrain = createTerrain(height, .9);
 
     bool foundFirst = false;
+
+
     
     for (int i = 0; i < width; i++) {
       bool foundNonOne = false;
@@ -106,6 +110,10 @@ public:
             bestT = t;
           }
         }
+
+        //Vector3 tangent = b.getTangent(bestT); 
+        //tangentAngles[j * width + i] = atan2(tangent[X], tangent[Y]) * 180 / M_PI;
+
         double difficulty = fmin(fmax(startDifficulty + (endDifficulty - startDifficulty) * bestT, startDifficulty), endDifficulty);
         double pointHeight = fmax(fmin(pow(dist * DIFFICULTY_COEFFICIENT(difficulty), 2), 1), 0);
         points[j * width + i] = (pointHeight * TOP_OF_CANYON) + getTerrain(j, i) * (pointHeight) + getNoise() * (1 - pointHeight);
@@ -138,7 +146,17 @@ public:
   }
 
   double getNoise() {
-    return (rand() % 2000 - 1000) / 200.0;
+    double gaussian_rand = 0;
+    const int iterations = 8;
+    const int range = 30;
+    for (int i = 0; i < iterations; i++) {
+      gaussian_rand += rand() % range;
+    }
+
+    gaussian_rand /= iterations;
+    gaussian_rand -= range/2;
+
+    return gaussian_rand;
   }
   
   double getTerrain(int y, int x) {
@@ -157,6 +175,10 @@ public:
       return Vector3::MakeVector(numeric_limits<double>::infinity(),numeric_limits<double>::infinity(),numeric_limits<double>::infinity());
     }
   }
+
+  //double getTangentAngle(int x, int y) {
+  //  return tangentAngles[width * y + x];
+  //}
   
   Vector3 getTerrainPoint(int x, int y) {
     y = min(max(y, 0), height - 1);
@@ -219,21 +241,38 @@ public:
 
 
   void setColor(double height) {
-    if (height < 10) {
-      glColor3d(0, 0, .7);
+    if (height > 10 && height < 15) {
+      glColor3d(1, 0.95, 1);
     }
-    else if (height < 20) {
-      glColor3d(1, 1, .3);
+    else if (height > 45 && height < 50) {
+      glColor3d(1, 1, 0.9);
     }
-    else if (height < 45) {
-      glColor3d(0, .6, 0);
+    else if (height > 75 && height < 80) {
+      glColor3d(0.95, 1, 1);
     }
-    else if (height < 70) {
-      glColor3d(.3, .3, 0);
-    }
-    else {
+    else if (height > 98) {
       glColor3d(1, 1, 1);
     }
+    else {
+      glColor3d(0.5, 0.5, 0.5);
+    }
+
+    //float zeros[] = {0,0,0,1};
+
+   // glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zeros);
+  }
+
+  void setTexCoords(Vector3& point) {
+    const int texture_fudge = 150;
+    double max_i = xEndOffset - xStartOffset;
+    double max_j = height;
+
+    //Matrix4 rot = Matrix4::RotationZMatrix(getTangentAngle(i,j) + 90);
+    //Vector3 texCoords(i / max_i * texture_fudge, j / max_j * texture_fudge, 0 );
+    //texCoords = rot.multiply(texCoords);
+    //glTexCoord2f(texCoords[X], texCoords[Y]);
+    setColor(point[Y]);
+    glTexCoord2f(point[X]/texture_fudge, point[Z]/texture_fudge);
   }
 
   void draw() {
@@ -246,13 +285,10 @@ public:
             GL_LINEAR_MIPMAP_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
             GL_LINEAR_MIPMAP_LINEAR);
-    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 
     glBegin(GL_QUAD_STRIP);
-    glColor3f(.8, .8, .8);
-
-    const int texture_fudge = 10;
 
     // Connect to previous segment
     if (previous) {
@@ -268,16 +304,11 @@ public:
 
         Vector3 normal = (v3 - v2).cross(v1 - v2).normalize();
         glNormal3dv(normal.getPointer());
-        //setColor(v1[Y]);
 
-        double tex_x = (double)i / xEndOffset * 5;
-        double tex_y = 0;
-
-        glTexCoord2f(tex_y, tex_x);
+        setTexCoords(v1); 
         glVertex3dv(v1.getPointer());
-        //setColor(v2[Y]);
-        tex_y = 1.0 / height * texture_fudge;
-        glTexCoord2f(tex_y, tex_x);
+        
+        setTexCoords(v2); 
         glVertex3dv(v2.getPointer());
       }
     }
@@ -292,25 +323,23 @@ public:
         Vector3 v1 = getPoint(i, j);
         Vector3 v2 = getPoint(i, j + 1);
         Vector3 v3 = getPoint(i + 1, j + 1);
+
         Vector3 normal = (v3 - v2).cross(v1 - v2).normalize();
-
-        double tex_x = (double)i / xEndOffset * texture_fudge;
-        double tex_y = (double)j / height * texture_fudge;
-
         glNormal3dv(normal.getPointer());
-        makeRed ? glColor3d(1,0,0) : glColor3d(1,1,1);//setColor(v1[Y]);
-        glTexCoord2f(tex_y, tex_x);
+        
+        setTexCoords(v1);
         glVertex3dv(v1.getPointer());
 
-        tex_y = (double)(j+1) / height * texture_fudge;
-        makeRed ? glColor3d(1,0,0) : glColor3d(1,1,1); //setColor(v2[Y]);
-        glTexCoord2f(tex_y, tex_x);
+        setTexCoords(v2);
         glVertex3dv(v2.getPointer());
       }
       glEnd();
     }
 
     glPopAttrib();
+
+    glColor3f(1,1,1);
+    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
   }
 
   int getYMin() {

@@ -59,7 +59,7 @@ void loadData() {
   cutsceneController.initialize();
 
   int tex_w, tex_h;
-  unsigned char* image = loadPPM("Textures/canyon.pbm", tex_w, tex_h);
+  unsigned char* image = loadPPM("Textures/desert.pbm", tex_w, tex_h);
   glBindTexture(GL_TEXTURE_2D, canyonTexture);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   gluBuild2DMipmaps(GL_TEXTURE_2D, 3, tex_w, tex_h, GL_RGB, GL_UNSIGNED_BYTE, image);
