@@ -23,8 +23,8 @@ using namespace std;
 
 pthread_mutex_t drawMutex = PTHREAD_MUTEX_INITIALIZER;
 
-int width  = 512;   // set window width in pixels here
-int height = 512;   // set window height in pixels here
+int width  = glutGet(GLUT_SCREEN_WIDTH);   // set window width in pixels here
+int height = glutGet(GLUT_SCREEN_HEIGHT);   // set window height in pixels here
 
 void togglePaused();
 
@@ -49,7 +49,8 @@ void reshapeCallback(int w, int h)
   glViewport(0, 0, w, h);  // set new viewport size
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glFrustum(-10.0, 10.0, -10.0, 10.0, 10, 10000.0); // set perspective projection viewing frustum
+  gluPerspective(90, (double)w/h, 10, 10000);
+//  glFrustum(-10.0, 10.0, -10.0, 10.0, 10, 10000.0); // set perspective projection viewing frustum
 }
 
 void loadData() {
@@ -118,7 +119,7 @@ void displayCallback(void)
 
   char s[10];
   snprintf(s, 10, "FPS: %0.2f", fps);
-  drawText(420, 502, s);
+  drawText(92, 10, s, kBottomRight);
 
   glFlush();
   glutSwapBuffers();
@@ -134,6 +135,10 @@ void keyDownHandler(int key, int, int)
 {
   if (-key == 'p')
     togglePaused();
+  else if(-key == 27) {
+    gameController.saveHighScore();
+    exit(0);
+  }
 
   activeController->keyDownHandler(key);
 
@@ -178,6 +183,7 @@ int main(int argc, char *argv[])
   glutInitWindowSize(width, height);      // set initial window size
   glutCreateWindow("Looking for something?");    	                // open window and set window title
 
+
   float fogColor[] = {0.5, 0.5, 0.5, 1.0};
 
   glFogi(GL_FOG_MODE, GL_LINEAR);
@@ -220,6 +226,7 @@ int main(int argc, char *argv[])
   glutSpecialUpFunc(keyUpHandler);
   glutKeyboardFunc(charKeyDownHandler);
   glutKeyboardUpFunc(charKeyUpHandler);
+  glutFullScreen();
 
   glutMainLoop();
   return 0;

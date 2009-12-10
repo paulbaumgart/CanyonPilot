@@ -9,10 +9,12 @@
 #include "Support/Scene/Skybox.h"
 #include "Controller.h"
 #include "Util.h"
+#include "Support/HighScore.h"
 
 extern void togglePaused();
 extern Canyon *canyon;
 extern Skybox *skybox;
+HighScore highscore("highscore");
 
 class GameController : public Controller {
 public:
@@ -58,6 +60,12 @@ public:
     else if (timeout <= 0 && canyon->aboveCanyon(airplane->getWingTip(false))) {
       cerr << "Above canyon!" << endl;
     }
+
+    highscore.updateScore(elapsed);
+  }
+
+  virtual void saveHighScore() {
+    highscore.finalize();
   }
   
   virtual void draw() {
@@ -76,6 +84,8 @@ public:
     
     glLoadIdentity();
     skybox->draw(airplane->getDirection());
+
+    highscore.draw();
   }
   
   virtual void keyDownHandler(int key) {
