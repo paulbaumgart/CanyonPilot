@@ -31,6 +31,7 @@ Below is a summary of the technical features to be included in this project:
 - Height maps
 
 Controls:
+
 - Keyboard arrow keys/,aoe: up/left/down/right
 - Space bar: run game at double speed
 - p: pause the game
