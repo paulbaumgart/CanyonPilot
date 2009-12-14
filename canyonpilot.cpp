@@ -23,8 +23,8 @@ using namespace std;
 
 pthread_mutex_t drawMutex = PTHREAD_MUTEX_INITIALIZER;
 
-int width  = glutGet(GLUT_SCREEN_WIDTH);   // set window width in pixels here
-int height = glutGet(GLUT_SCREEN_HEIGHT);   // set window height in pixels here
+int width  = 0;
+int height = 0;
 
 void togglePaused();
 
@@ -187,10 +187,13 @@ int main(int argc, char *argv[])
   GLfloat light0_position[] = { 10.0, 10.0, 10.0, 0.0 };
 
   glutInit(&argc, argv);      	      	      // initialize GLUT
+  
+  width = glutGet(GLUT_SCREEN_WIDTH);   // set window height in pixels here
+  height = glutGet(GLUT_SCREEN_HEIGHT);   // set window height in pixels here
+ 
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);   // open an OpenGL context with double buffering, RGB colors, and depth buffering
   glutInitWindowSize(width, height);      // set initial window size
   glutCreateWindow("Looking for something?");    	                // open window and set window title
-
 
   float fogColor[] = {0.5, 0.5, 0.5, 1.0};
 
