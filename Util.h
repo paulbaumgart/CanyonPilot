@@ -73,12 +73,14 @@ void resetPerspectiveProjection() {
 void renderBitmapString(float x, float y, char *string)
 {
   char *c;
+  glPushAttrib(GL_ENABLE_BIT);
   glDisable(GL_LIGHTING);
+  glDisable(GL_FOG);
   glRasterPos2f(x, y);
   for (c=string; *c != '\0'; c++) {
     glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *c);
   }
-  glEnable(GL_LIGHTING);
+  glPopAttrib();
 }
 
 enum textPosition {
@@ -92,7 +94,6 @@ enum textPosition {
 
 void drawText(char* s, enum textPosition position, int xoff = 0, int yoff = 0) {
   glPushMatrix();
-  glColor3f(0.0f,1.0f,1.0f);
   setOrthographicProjection();
   glLoadIdentity();
 
@@ -129,6 +130,7 @@ void drawText(char* s, enum textPosition position, int xoff = 0, int yoff = 0) {
   x += xoff;
   y += yoff;
 
+  glColor3f(0.0f,1.0f,1.0f);
   renderBitmapString(x, y, s);
   resetPerspectiveProjection();
   glPopMatrix();
