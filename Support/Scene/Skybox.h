@@ -1,7 +1,11 @@
 #ifndef _SKYBOX_H_
 #define _SKYBOX_H_
 
+#ifdef __APPLE__
 #include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
+#endif
 #include <math.h>
 #include "../loadppm.h"
 
