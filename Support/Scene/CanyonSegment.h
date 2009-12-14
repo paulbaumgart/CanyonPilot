@@ -305,7 +305,7 @@ public:
     // Connect to previous segment
     if (previous) {
       int dXMin = xMin - previous->getXMin();
-      for (int i = xStartOffset; i <= xEndOffset; i++) {
+      for (int i = xStartOffset; i < xEndOffset; i++) {
         Vector3 v1 = previous->getPoint(i + dXMin, previous->getHeight()-1);
         Vector3 v2 = getPoint(i, 0);
         Vector3 v3 = getPoint(i + 1, 0);
@@ -328,9 +328,9 @@ public:
     glEnd();
 
     // Draw this segment
-    for (int j = 0; j < height; j++) {
+    for (int j = 0; j < height-1; j++) {
       glBegin(GL_QUAD_STRIP);
-      for (int i = xStartOffset; i <= xEndOffset; i++) {
+      for (int i = xStartOffset; i < xEndOffset; i++) {
         bool makeRed = (i == collidedx && j == collidedy);
         Vector3 v1 = getPoint(i, j);
         Vector3 v2 = getPoint(i, j + 1);
@@ -355,7 +355,7 @@ public:
       
       for (int j = 0; j < height; j += step) {
         glBegin(GL_QUAD_STRIP);
-        for (int i = xStartOffset; i >= -200; i -= step) {
+        for (int i = xStartOffset - 1; i >= -200; i -= step) {
           bool makeRed = (i == collidedx && j == collidedy);
           Vector3 v1 = getTerrainPoint(i, j);
           Vector3 v2 = getTerrainPoint(i, j + step);
@@ -373,7 +373,7 @@ public:
         glEnd();
         
         glBegin(GL_QUAD_STRIP);
-        for (int i = xEndOffset; i <= width + 200; i += step) {
+        for (int i = xEndOffset - 1; i <= width + 200; i += step) {
           bool makeRed = (i == collidedx && j == collidedy);
           Vector3 v1 = getTerrainPoint(i, j);
           Vector3 v2 = getTerrainPoint(i, j + step);
