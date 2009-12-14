@@ -180,6 +180,20 @@ void togglePaused() {
   paused = !paused;
 }
 
+void disableKeyEvents() {
+  glutSpecialFunc(0);
+  glutSpecialUpFunc(0);
+  glutKeyboardFunc(0);
+  glutKeyboardUpFunc(0);
+}
+
+void enableKeyEvents() {
+  glutSpecialFunc(keyDownHandler);
+  glutSpecialUpFunc(keyUpHandler);
+  glutKeyboardFunc(charKeyDownHandler);
+  glutKeyboardUpFunc(charKeyUpHandler);
+}
+
 int main(int argc, char *argv[])
 {
   GLfloat mat_specular[]   = { 1.0, 1.0, 1.0, 1.0 };
@@ -229,14 +243,12 @@ int main(int argc, char *argv[])
   glEnable(GL_LIGHT0);
 
   // Install callback functions:
+  enableKeyEvents();
+ 
   glutDisplayFunc(displayCallback);
   glutReshapeFunc(reshapeCallback);
 
   glutIdleFunc(displayCallback);
-  glutSpecialFunc(keyDownHandler);
-  glutSpecialUpFunc(keyUpHandler);
-  glutKeyboardFunc(charKeyDownHandler);
-  glutKeyboardUpFunc(charKeyUpHandler);
   glutFullScreen();
 
   glutMainLoop();

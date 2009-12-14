@@ -17,6 +17,9 @@ extern Canyon *canyon;
 extern Skybox *skybox;
 HighScore highscore("highscore");
 
+void enableKeyEvents();
+void disableKeyEvents();
+
 class GameController : public Controller {
 public:
   virtual void initialize() {
@@ -40,10 +43,12 @@ public:
     delete airplane;
     delete laser;
     
+
     saveHighScore();
     highscore.resetScore();
     canyon->resetCanyon();
     initialize();
+    enableKeyEvents();
   }
   
   virtual void step(double elapsed) {
@@ -74,24 +79,28 @@ public:
     double distAboveCanyon = canyon->aboveCanyon(airplane->getNose());
     
     if (laser->isDone() && killWithLaser) {
+      disableKeyEvents();
       deathMessage = "You have been killed by enemy lasers!";
       displayDeathMessage = true;
       cerr << "Shot dead by lasers. Don't fly so high!" << endl;
       airplane->kill();
     }
     if (timeout <= 0 && canyon->collisionWithPoint(airplane->getWingTip(true))) {
+      disableKeyEvents();
       deathMessage = "Collision with the right wing!";
       displayDeathMessage = true;
       cerr << "Collision with right wing!" << endl;
       airplane->kill();
     }
     else if (timeout <= 0 && canyon->collisionWithPoint(airplane->getWingTip(false))) {
+      disableKeyEvents();
       deathMessage = "Collision with the left wing!";
       displayDeathMessage = true;
       cerr << "Collision with left wing!" << endl;
       airplane->kill();
     }
     else if (timeout <= 0 && canyon->collisionWithPoint(airplane->getNose())) {
+      disableKeyEvents();
       deathMessage = "Collision with the nose!";
       displayDeathMessage = true;
       cerr << "Collision with nose!" << endl;
