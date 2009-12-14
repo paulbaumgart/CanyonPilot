@@ -16,11 +16,11 @@ class HighScore {
   HighScore(char* filename) {
     file = filename;
     
-    FILE* f = fopen(file, "r");
-
-    if (f) {
+    if (access(file, R_OK) != -1) {
+      FILE* f = fopen(file, "r");
       fscanf(f, "%u", &highscore);
       cerr << "Current highscore: " << highscore << endl;
+      fclose(f);
     }
     else {
       highscore = 0;
@@ -28,8 +28,6 @@ class HighScore {
 
     offset = ((int)(log(highscore)/log(10)) + 1) * 8;
     score = 0;
-
-    fclose(f);
   }
 
   void draw() {
