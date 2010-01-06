@@ -15,10 +15,9 @@ class AirplaneObject : public Object3d {
     }
     
     virtual void drawObject(Matrix4& mat) {
-      glMultMatrixd(mat.getPointer());
-      
-      
       if (exploding) {
+        /*glMultMatrixd(mat.getPointer());
+        
         glPushAttrib(GL_ENABLE_BIT);
         glDisable(GL_CULL_FACE);
         
@@ -48,24 +47,10 @@ class AirplaneObject : public Object3d {
           glEnd();
           glPopMatrix();
         }
-        glPopAttrib();
+        glPopAttrib();*/
       }
       else {
-        glBegin(GL_TRIANGLES);
-        for (int i = 0; i < nIndices; i += 3) {
-          if (normals)
-            glNormal3fv(&normals[indices[i] * 3]);
-          glVertex3dv(vertices[indices[i]].getPointer());
-
-          if (normals)
-            glNormal3fv(&normals[indices[i + 1] * 3]);
-          glVertex3dv(vertices[indices[i + 1]].getPointer());
-
-          if (normals)
-            glNormal3fv(&normals[indices[i + 2] * 3]);
-          glVertex3dv(vertices[indices[i + 2]].getPointer());
-        }
-        glEnd();
+        Object3d::drawObject(mat);
       }
     }
     

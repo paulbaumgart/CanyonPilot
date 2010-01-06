@@ -8,25 +8,23 @@
 class Object3d : public Shape3d {
   public:
     Object3d(char* file) {
-      float *rawVertices;
-      ObjReader::readObj(file, nVerts, &rawVertices, &normals, &texcoords, nIndices, &indices);
+      ObjReader::readObj(file, nVerts, &rawVertices, &rawNormals, &texcoords, nIndices, &indices);
       
-      vertices = new Vector3[nVerts];
-      
-      for (int i = 0; i < nVerts; i++) {
-        vertices[i] = Vector3::MakeVector(rawVertices[i*3], rawVertices[i*3 + 1], rawVertices[i*3 + 2]);
-      }
-      
-      free(rawVertices);
+      // 9 because there are 3 vertices for each index and 3 floats per vertex
+      vertices = new float[nIndices * 9];
+      normals = new float[nIndices * 9];
       
       normalize();
     }
     
     ~Object3d() {
       delete[] vertices;
+      delete[] normals;
       
-      if (normals)
-        free(normals);
+      free(rawVertices);
+      
+      if (rawNormals)
+        free(rawNormals);
       
       if (texcoords)
         free(texcoords);
@@ -38,83 +36,62 @@ class Object3d : public Shape3d {
     virtual void drawObject(Matrix4& mat) {
       glMultMatrixd(mat.getPointer());
       
-      glBegin(GL_TRIANGLES);      
-      for (int i = 0; i < nIndices; i += 3) {
-        if (normals)
-          glNormal3fv(&normals[indices[i] * 3]);
-        glVertex3dv(vertices[indices[i]].getPointer());
+      glEnableClientState(GL_NORMAL_ARRAY);
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glNormalPointer(GL_FLOAT, 0, normals);
+      glVertexPointer(3, GL_FLOAT, 0, vertices);
 
-        if (normals)
-          glNormal3fv(&normals[indices[i + 1] * 3]);
-        glVertex3dv(vertices[indices[i + 1]].getPointer());
+      glDrawArrays(GL_TRIANGLES, 0, nIndices * 3);
 
-        if (normals)
-          glNormal3fv(&normals[indices[i + 2] * 3]);
-        glVertex3dv(vertices[indices[i + 2]].getPointer());
-      }
-      glEnd();
+      glDisableClientState(GL_VERTEX_ARRAY);
+      glDisableClientState(GL_NORMAL_ARRAY);
     }
     
     void scale(double val) {
-      Matrix4 s = Matrix4::ScaleMatrix(val, val, val);
-      boundingSphere.radius *= val;
       
-      for (int i = 0; i < nVerts; i++) {
-        vertices[i] = s.multiply(vertices[i]);
+      for (int i = 0; i < nIndices * 3; i++) {
+        vertices[i] *= val;
       }
     }
     
     void normalize() {
       float maxX = FLT_MIN, maxY = FLT_MIN, maxZ = FLT_MIN, minX = FLT_MAX, minY = FLT_MAX, minZ = FLT_MAX;
 
-      for (int i = 0; i < nVerts; i++) {
-        if (vertices[i][X] > maxX) {
-          maxX = vertices[i][X];
+      for (int i = 0; i < nVerts * 3; i++) {
+        float & maxRef = (i % 3 == 0) ? maxX : (i % 3 == 1) ? maxY : maxZ;
+        float & minRef = (i % 3 == 0) ? minX : (i % 3 == 1) ? minY : minZ;
+        
+        if (rawVertices[i] > maxRef) {
+          maxRef = rawVertices[i];
         }
-        else if (vertices[i][X] < minX) {
-          minX = vertices[i][X];
-        }
-
-        if (vertices[i][Y] > maxY) {
-          maxY = vertices[i][Y];
-        }
-        else if (vertices[i][Y] < minY) {
-          minY = vertices[i][Y];
-        }
-
-        if (vertices[i][Z] > maxZ) {
-          maxZ = vertices[i][Z];
-        }
-        else if (vertices[i][Z] < minZ) {
-          minZ = vertices[i][Z];
+        else if (rawVertices[i] < minRef) {
+          minRef = rawVertices[i];
         }
       }
-
-      Vector3 transVector = 
-          Vector3::MakeVector(-(maxX + minX) / 2, -(maxY + minY) / 2, -(maxZ + minZ) / 2);
-      Matrix4 transMatrix = Matrix4::TranslationMatrix(transVector);
+      
+      float transX = -(maxX + minX) / 2;
+      float transY = -(maxY + minY) / 2;
+      float transZ = -(maxZ + minZ) / 2;
 
       float scaleFactor = fmax(maxX - minX, fmax(maxY - minY, maxZ - minZ));
-
-      Matrix4 scaleMatrix;
-      scaleMatrix.scale(1/scaleFactor, 1/scaleFactor, 1/scaleFactor);
-
-      Matrix4 normMatrix = scaleMatrix.multiply(transMatrix);
       
-      boundingSphere.radius = 0;
-      for (int i = 0; i < nVerts; i++) {
-        vertices[i] = normMatrix.multiply(vertices[i]);
-        
-        if (vertices[i].length() > boundingSphere.radius) {
-          boundingSphere.radius = vertices[i].length();
-        }
+      for (int i = 0; i < nVerts * 3; i++) {
+        rawVertices[i] += transX;
+        rawVertices[i] /= scaleFactor;
+      }
+      
+      for (int i = 0; i < nIndices; i++) {
+        memcpy(vertices + (i * 3), rawVertices + (indices[i] * 3), 3 * sizeof(float));
+        memcpy(normals + (i * 3), rawNormals + (indices[i] * 3), 3 * sizeof(float));
       }
     }
   protected:
     int nVerts;
-    Vector3 *vertices;
-    float *normals;
+    float *rawNormals;
     float *texcoords;
+    float *vertices;
+    float *normals;
+    float *rawVertices;
     int nIndices;
     int *indices;
 };
