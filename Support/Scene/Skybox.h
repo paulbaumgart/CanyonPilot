@@ -124,6 +124,9 @@ public:
   }
   
   void draw(Vector3 velocity) {
+    glColor3f(1,1,1);
+    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    
     glRotated(atan2(velocity[Z], velocity[X]) * 180 / M_PI - 180, 0, 1, 0);
     glTranslated(0, size/6, 0);
     

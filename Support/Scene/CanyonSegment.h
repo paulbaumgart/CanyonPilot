@@ -271,13 +271,7 @@ public:
 
   void setTexCoords(Vector3& point, bool drawRed = false) {
     const int texture_fudge = 150;
-    double max_i = xEndOffset - xStartOffset;
-    double max_j = height;
-
-    //Matrix4 rot = Matrix4::RotationZMatrix(getTangentAngle(i,j) + 90);
-    //Vector3 texCoords(i / max_i * texture_fudge, j / max_j * texture_fudge, 0 );
-    //texCoords = rot.multiply(texCoords);
-    //glTexCoord2f(texCoords[X], texCoords[Y]);
+    
     if (drawRed && redCollisions) {
       glColor3d(1, 0, 0);
     }
@@ -393,9 +387,6 @@ public:
     }
 
     glPopAttrib();
-
-    glColor3f(1,1,1);
-    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
   }
 
   int getYMin() {
